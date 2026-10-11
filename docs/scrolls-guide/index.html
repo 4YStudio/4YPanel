@@ -17,10 +17,13 @@
 </head>
 <body>
     <div id="app">
+        <!-- 移动端侧边栏全屏遮罩 -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="d-flex align-items-center">
-                    <div class="bg-purple-box rounded-3 d-flex align-items-center justify-content-center me-2" style="width: 34px; height: 34px;">
+                    <div class="sidebar-logo me-2">
                         <i class="fa-solid fa-scroll text-purple"></i>
                     </div>
                     <div>
@@ -28,18 +31,21 @@
                         <div class="text-muted small" style="font-size: 0.68rem;">Scroll Dev Guide</div>
                     </div>
                 </div>
+                <button class="sidebar-close-btn d-lg-none" id="sidebar-close" aria-label="关闭侧边栏">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
             <div class="sidebar-content">
                 <nav class="nav flex-column" id="toc-nav">
                 </nav>
             </div>
-            <div class="sidebar-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--c-border);">
+            <div class="sidebar-footer">
                 <div class="d-flex flex-column gap-2">
-                    <a href="../scrolls-market.html" style="color: var(--c-text-secondary); text-decoration: none; font-size: 0.82rem; display: flex; align-items: center; gap: 8px;">
+                    <a href="../scrolls-market.html">
                         <i class="fa-solid fa-store text-purple"></i>
                         <span>浏览卷轴商店</span>
                     </a>
-                    <a href="../" style="color: var(--c-text-secondary); text-decoration: none; font-size: 0.82rem; display: flex; align-items: center; gap: 8px;">
+                    <a href="../">
                         <i class="fa-solid fa-arrow-left"></i>
                         <span>返回官网首页</span>
                     </a>
@@ -47,18 +53,23 @@
             </div>
         </aside>
 
-        <main class="main-container">
+        <main class="main-container" id="main-container">
             <header class="mobile-header">
-                <button class="btn btn-link text-body p-0 me-3" id="sidebar-toggle">
-                    <i class="fa-solid fa-bars fa-lg"></i>
+                <button class="btn-toggle me-2" id="sidebar-toggle" aria-label="打开侧边栏">
+                    <i class="fa-solid fa-bars"></i>
                 </button>
-                <h5 class="m-0 fw-bold">卷轴开发指南</h5>
-                <a href="../scrolls-market.html" class="ms-auto me-3" style="color: var(--c-text-secondary); text-decoration: none; font-size: 0.85rem;">
-                    <i class="fa-solid fa-store me-1"></i>商店
-                </a>
-                <a href="../" style="color: var(--c-text-secondary); text-decoration: none; font-size: 0.85rem;">
-                    <i class="fa-solid fa-house me-1"></i>官网
-                </a>
+                <div class="mobile-brand">
+                    <i class="fa-solid fa-scroll text-purple"></i>
+                    <span>卷轴指南</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <a href="../scrolls-market.html" class="btn btn-sm btn-outline-secondary py-1 px-2 text-decoration-none" style="font-size: 0.78rem; border-color: var(--c-border); color: var(--c-text-secondary);">
+                        <i class="fa-solid fa-store me-1"></i>商店
+                    </a>
+                    <a href="../" class="btn btn-sm btn-outline-secondary py-1 px-2 text-decoration-none" style="font-size: 0.78rem; border-color: var(--c-border); color: var(--c-text-secondary);">
+                        <i class="fa-solid fa-house me-1"></i>官网
+                    </a>
+                </div>
             </header>
 
             <div class="lang-switch">
@@ -73,6 +84,12 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- 全局轻量 Toast 提示 -->
+    <div class="doc-toast" id="doc-toast">
+        <i class="fa-solid fa-check text-success"></i>
+        <span id="doc-toast-msg">已复制到剪贴板</span>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="css/market.css?v=2">
 </head>
 <body>
+    <div class="nav-backdrop" id="navBackdrop"></div>
     <nav class="navbar scrolled" id="navbar">
         <div class="container nav-container">
             <a href="./index.html" class="nav-brand">
@@ -30,22 +31,51 @@
                 </div>
             </a>
             <div class="nav-links" id="navLinks">
-                <a href="./index.html#features">特性</a>
-                <a href="./index.html#screenshots">截图</a>
-                <a href="./index.html#quickstart">快速开始</a>
-                <a href="./market.html">
+                <div class="nav-links-header">
+                    <div class="nav-brand-group">
+                        <span class="nav-brand-text">导航菜单</span>
+                    </div>
+                    <button class="nav-close-btn" id="navCloseBtn" aria-label="Close menu">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <a href="./index.html#architectures" class="nav-item">
+                    <i class="fa-solid fa-layer-group"></i> 架构与特性
+                </a>
+                <a href="./index.html#scrolls" class="nav-item">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> 卷轴系统
+                </a>
+                <a href="./index.html#quickstart" class="nav-item">
+                    <i class="fa-solid fa-rocket"></i> 快速开始
+                </a>
+                <a href="./market.html" class="nav-item nav-link-market">
                     <i class="fa-solid fa-puzzle-piece"></i> 插件市场
                 </a>
-                <a href="./scrolls-market.html" class="active">
+                <a href="./scrolls-market.html" class="nav-item nav-link-scrolls" style="background: rgba(192, 132, 252, 0.12); color: #c084fc !important;">
                     <i class="fa-solid fa-scroll"></i> 卷轴市场
                 </a>
-                <a href="./scrolls-guide/" class="nav-link-doc">
-                    <i class="fa-solid fa-book-journal-whills"></i> 卷轴文档
-                </a>
-                <a href="./dev-guide/" class="nav-link-doc">
-                    <i class="fa-solid fa-book"></i> 插件文档
-                </a>
-                <a href="https://github.com/4ystudio/mc-web-panel" target="_blank" class="nav-link-github">
+                <div class="nav-dropdown">
+                    <button class="nav-item nav-dropdown-btn" id="navDocsBtn" type="button">
+                        <i class="fa-solid fa-book-bookmark"></i> 开发文档 <i class="fa-solid fa-chevron-down nav-dropdown-arrow"></i>
+                    </button>
+                    <div class="nav-dropdown-menu">
+                        <a href="./scrolls-guide/" class="dropdown-item">
+                            <i class="fa-solid fa-scroll" style="color: #c084fc;"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">卷轴开发手册</span>
+                                <span class="dropdown-sub">原版免端模组的脚本引擎</span>
+                            </div>
+                        </a>
+                        <a href="./dev-guide/" class="dropdown-item">
+                            <i class="fa-solid fa-code" style="color: #60a5fa;"></i>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-title">插件开发指南</span>
+                                <span class="dropdown-sub">模块化全栈插件开发标准</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <a href="https://github.com/4ystudio/mc-web-panel" target="_blank" class="nav-item nav-link-github">
                     <i class="fa-brands fa-github"></i> GitHub
                 </a>
             </div>

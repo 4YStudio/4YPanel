@@ -7,30 +7,93 @@
     var navbar = document.getElementById('navbar');
     var navToggle = document.getElementById('navToggle');
     var navLinks = document.getElementById('navLinks');
+    var navBackdrop = document.getElementById('navBackdrop');
+    var navCloseBtn = document.getElementById('navCloseBtn');
+    var navDocsBtn = document.getElementById('navDocsBtn');
 
     // 导航栏滚动毛玻璃背景变化
     window.addEventListener('scroll', function () {
-        if (window.scrollY > 40) {
+        if (window.scrollY > 30) {
             navbar.classList.add('scrolled');
         } else {
             navbar.classList.remove('scrolled');
         }
     }, { passive: true });
 
+    // 关闭移动端抽屉
+    function closeMobileMenu() {
+        if (!navToggle || !navLinks) return;
+        navToggle.classList.remove('active');
+        navLinks.classList.remove('active');
+        if (navbar) navbar.classList.remove('menu-open');
+        if (navBackdrop) navBackdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // 打开移动端抽屉
+    function openMobileMenu() {
+        if (!navToggle || !navLinks) return;
+        navToggle.classList.add('active');
+        navLinks.classList.add('active');
+        if (navbar) navbar.classList.add('menu-open');
+        if (navBackdrop) navBackdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
     // 移动端菜单切换
     if (navToggle && navLinks) {
-        navToggle.addEventListener('click', function () {
-            var isActive = navToggle.classList.toggle('active');
-            navLinks.classList.toggle('active');
-            document.body.style.overflow = isActive ? 'hidden' : '';
+        navToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (navLinks.classList.contains('active')) {
+                closeMobileMenu();
+            } else {
+                openMobileMenu();
+            }
         });
 
+        if (navCloseBtn) {
+            navCloseBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                closeMobileMenu();
+            });
+        }
+
+        if (navBackdrop) {
+            navBackdrop.addEventListener('click', closeMobileMenu);
+        }
+
+        // 点击导航链接自动关闭抽屉
         navLinks.querySelectorAll('a').forEach(function (link) {
             link.addEventListener('click', function () {
-                navToggle.classList.remove('active');
-                navLinks.classList.remove('active');
-                document.body.style.overflow = '';
+                closeMobileMenu();
             });
+        });
+
+        // 移动端点击文档下拉切换展开
+        if (navDocsBtn) {
+            navDocsBtn.addEventListener('click', function (e) {
+                if (window.innerWidth <= 992) {
+                    e.preventDefault();
+                    var dropdown = navDocsBtn.closest('.nav-dropdown');
+                    if (dropdown) dropdown.classList.toggle('open');
+                }
+            });
+        }
+
+        // ESC 按键关闭抽屉
+        window.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+                closeMobileMenu();
+            }
+        });
+
+        // 点击导航抽屉外部任意区域自动关闭
+        document.addEventListener('click', function (e) {
+            if (navLinks.classList.contains('active')) {
+                if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
+                    closeMobileMenu();
+                }
+            }
         });
     }
 

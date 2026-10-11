@@ -77,6 +77,24 @@ img {
     height: auto;
 }
 
+/* ===== 移动端遮罩层 (Backdrop) ===== */
+.nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 /* ===== 顶部导航栏 (Navbar) ===== */
 .navbar {
     position: fixed;
@@ -90,7 +108,7 @@ img {
 }
 
 .navbar.scrolled {
-    background: rgba(7, 11, 22, 0.85);
+    background: rgba(7, 11, 22, 0.88);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--c-border);
@@ -98,10 +116,18 @@ img {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
+/* 核心修复：移动端抽屉打开时，彻底消除 navbar 的 backdrop-filter 包含块陷阱并提升层级高于遮罩 */
+.navbar.menu-open {
+    z-index: 1005 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
 .nav-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
 }
 
 .nav-brand {
@@ -112,6 +138,7 @@ img {
     font-weight: 800;
     font-size: 1.15rem;
     text-decoration: none;
+    flex-shrink: 0;
 }
 
 .nav-logo {
@@ -137,10 +164,12 @@ img {
     display: flex;
     align-items: center;
     gap: 8px;
+    white-space: nowrap !important;
 }
 
 .nav-brand-text {
     letter-spacing: -0.02em;
+    white-space: nowrap !important;
 }
 
 .nav-brand-badge {
@@ -153,30 +182,40 @@ img {
     border-radius: 6px;
     letter-spacing: 0.04em;
     line-height: 1.2;
+    white-space: nowrap !important;
 }
 
 .nav-links {
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-shrink: 0;
 }
 
+.nav-links-header {
+    display: none;
+}
+
+.nav-item,
 .nav-links a {
     color: var(--c-text-secondary);
     text-decoration: none;
-    font-size: 0.875rem;
+    font-size: 0.86rem;
     font-weight: 500;
-    padding: 8px 14px;
+    padding: 8px 12px;
     border-radius: 8px;
     transition: all var(--transition);
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap !important; /* 强制单行，彻底杜绝 PC 端竖向折叠 */
+    flex-shrink: 0;
 }
 
+.nav-item:hover,
 .nav-links a:hover {
     color: var(--c-text);
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .nav-link-market {
@@ -184,7 +223,7 @@ img {
 }
 
 .nav-link-market:hover {
-    background: rgba(251, 191, 36, 0.1) !important;
+    background: rgba(251, 191, 36, 0.12) !important;
 }
 
 .nav-link-scrolls {
@@ -192,31 +231,114 @@ img {
 }
 
 .nav-link-scrolls:hover {
-    background: rgba(192, 132, 252, 0.1) !important;
+    background: rgba(192, 132, 252, 0.12) !important;
 }
 
-.nav-docs-group {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: 4px;
+/* ===== 下拉菜单 (Dropdown) ===== */
+.nav-dropdown {
+    position: relative;
+    display: inline-block;
 }
 
-.nav-link-doc {
+.nav-dropdown-btn {
     background: rgba(59, 130, 246, 0.12) !important;
     color: #60a5fa !important;
-    border: 1px solid rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.86rem;
 }
 
-.nav-link-doc:hover {
-    background: rgba(59, 130, 246, 0.25) !important;
+.nav-dropdown-btn:hover {
+    background: rgba(59, 130, 246, 0.22) !important;
     color: #fff !important;
+}
+
+.nav-dropdown-arrow {
+    font-size: 0.65rem;
+    margin-left: 2px;
+    transition: transform var(--transition);
+}
+
+.nav-dropdown:hover .nav-dropdown-arrow,
+.nav-dropdown.open .nav-dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 260px;
+    background: rgba(13, 20, 36, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius);
+    padding: 8px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown.open .nav-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px !important;
+    border-radius: 8px;
+    color: var(--c-text) !important;
+    text-decoration: none;
+    transition: all var(--transition);
+    white-space: nowrap !important;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    transform: translateX(4px);
+}
+
+.dropdown-item i {
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.dropdown-item-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdown-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+}
+
+.dropdown-sub {
+    font-size: 0.72rem;
+    color: var(--c-text-tertiary);
+    line-height: 1.2;
+    margin-top: 2px;
 }
 
 .nav-link-github {
     background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid var(--c-border);
-    margin-left: 6px;
+    margin-left: 4px;
 }
 
 .nav-link-github:hover {
@@ -231,12 +353,18 @@ img {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background var(--transition);
+}
+
+.nav-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .nav-toggle span {
     display: block;
-    width: 24px;
+    width: 22px;
     height: 2px;
     background: var(--c-text);
     border-radius: 2px;
@@ -1290,46 +1418,129 @@ img {
     }
 }
 
-@media (max-width: 820px) {
-    .nav-links {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(7, 11, 22, 0.98);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-        z-index: 999;
-        padding: 24px;
-    }
-
-    .nav-links.active {
-        display: flex;
-    }
-
-    .nav-docs-group {
-        flex-direction: column;
-        width: 100%;
-        max-width: 280px;
-    }
-
-    .nav-links a {
-        font-size: 1.15rem;
-        padding: 12px 24px;
-        width: 100%;
-        max-width: 280px;
-        justify-content: center;
-    }
-
+@media (max-width: 992px) {
+    /* 移动端汉堡切换按钮 */
     .nav-toggle {
         display: flex;
         z-index: 1001;
+    }
+
+    /* 移动端侧边抽屉 (Drawer) - 核心修复：彻底解决 Containing Block 污染与重叠 */
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(330px, 86vw);
+        height: 100vh;
+        height: 100dvh;
+        background: #090e1c;
+        border-left: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: -16px 0 50px rgba(0, 0, 0, 0.7);
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 24px 20px 40px;
+        gap: 8px;
+        z-index: 1002;
+        overflow-y: auto;
+        transform: translateX(105%);
+        transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+    }
+
+    .nav-links.active {
+        transform: translateX(0);
+        pointer-events: auto;
+    }
+
+    /* 抽屉顶部头部 */
+    .nav-links-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 16px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-close-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--c-border);
+        color: var(--c-text);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all var(--transition);
+    }
+
+    .nav-close-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+    }
+
+    .nav-links .nav-item {
+        font-size: 0.95rem;
+        padding: 12px 16px;
+        width: 100%;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        justify-content: flex-start;
+    }
+
+    .nav-links .nav-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* 移动端下拉菜单内嵌展示 */
+    .nav-dropdown {
+        width: 100%;
+        display: block;
+    }
+
+    .nav-dropdown-btn {
+        width: 100%;
+        justify-content: space-between !important;
+    }
+
+    .nav-dropdown-menu {
+        position: static;
+        width: 100%;
+        min-width: 0;
+        margin-top: 6px;
+        padding: 6px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        display: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+    }
+
+    .nav-dropdown.open .nav-dropdown-menu {
+        display: flex;
+    }
+
+    .nav-dropdown-menu .dropdown-item {
+        padding: 10px 12px !important;
+        background: rgba(255, 255, 255, 0.03);
+        margin-bottom: 4px;
+    }
+
+    .nav-link-github {
+        margin-left: 0 !important;
+        margin-top: 8px;
     }
 
     .nav-toggle.active span:nth-child(1) {

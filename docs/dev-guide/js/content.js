@@ -295,3 +295,9 @@ const docContentData = {
         ]
     }
 };
+
+if (typeof window !== 'undefined') {
+    window.docContentData = docContentData;
+}
+
+

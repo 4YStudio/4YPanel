@@ -242,7 +242,7 @@ export default {
                         <div v-if="isEditing" class="mb-3">
                             <label class="form-label small fw-bold text-muted">{{ $t('properties.loader_type') }}</label>
                             <div class="form-control-plaintext small fw-bold">
-                                {{ (form.loaderType || 'fabric') === 'neoforge' ? 'NeoForge' : (form.loaderType || 'fabric').charAt(0).toUpperCase() + (form.loaderType || 'fabric').slice(1) }}
+                                {{ formatLoader(form.loaderType) }}
                             </div>
                         </div>
                         <div v-if="isEditing && (!form.loaderType || form.loaderType === 'fabric')" class="mb-3 animate-in">
@@ -334,12 +334,18 @@ export default {
                 if (isEditing.value) {
                     await api.post('/api/instances/update', payload);
                     showToast(t('instance_manager.update_success'));
+                    modal.value.hide();
+                    fetchInstances();
                 } else {
-                    await api.post('/api/instances/create', payload);
+                    const res = await api.post('/api/instances/create', payload);
                     showToast(t('instance_manager.create_success'));
+                    modal.value.hide();
+                    await fetchInstances();
+                    if (res.data?.instance?.id) {
+                        const newInst = store.instanceList.find(i => i.id === res.data.instance.id) || res.data.instance;
+                        await enterInstance(newInst);
+                    }
                 }
-                modal.value.hide();
-                fetchInstances();
             } catch (e) {
                 showToast(e.response?.data?.error || 'Error');
             }
@@ -368,8 +374,14 @@ export default {
             try {
                 await api.post('/api/instances/select', { id: inst.id });
                 store.currentInstanceId = inst.id;
-                const { getFirstVisibleView } = await import('/js/components/Sidebar.js');
-                store.view = getFirstVisibleView(inst.id);
+                const statusRes = await api.get('/api/setup/status');
+                store.isSetup = !!statusRes.data?.isSetup;
+                if (!store.isSetup) {
+                    store.view = 'dashboard';
+                } else {
+                    const { getFirstVisibleView } = await import('/js/components/Sidebar.js');
+                    store.view = getFirstVisibleView(inst.id);
+                }
             } catch (e) {
                 showToast(t('instance_manager.select_fail'));
             }
@@ -408,6 +420,9 @@ export default {
         const formatLoader = (type) => {
             if (!type) return 'Vanilla';
             if (type === 'vanilla') return 'Vanilla';
+            if (type === 'paper') return 'Paper';
+            if (type === 'purpur') return 'Purpur';
+            if (type === 'spigot') return 'Spigot';
             if (type === 'fabric') return 'Fabric';
             if (type === 'forge') return 'Forge';
             if (type === 'neoforge') return 'NeoForge';

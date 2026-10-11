@@ -170,8 +170,8 @@ export default {
                                 <div class="fw-bold">{{ currentVersion.loader === 'Unknown' ? $t('common.unknown') : currentVersion.loader }}</div>
                             </div>
                             <div class="flex-fill">
-                                <div class="small text-muted mb-1">{{ $t('properties.loader_type') }}</div>
-                                <div class="fw-bold">{{ currentLoaderType === 'neoforge' ? 'NeoForge' : currentLoaderType.charAt(0).toUpperCase() + currentLoaderType.slice(1) }}</div>
+                                <div class="small text-muted mb-1">{{ $t('properties.server_core_type') || $t('properties.loader_type') }}</div>
+                                <div class="fw-bold">{{ formatLoaderName(currentLoaderType) }}</div>
                             </div>
                         </div>
                         <button class="btn btn-outline-info w-100 rounded-pill fw-bold mt-auto" @click="openFabricModal" :disabled="fabricChanging">
@@ -219,13 +219,57 @@ export default {
 
                         <div class="mb-3">
                             <label class="form-label fw-bold small">
-                                <i class="fa-solid fa-layer-group me-1"></i>{{ $t('properties.loader_type') }}
+                                <i class="fa-solid fa-layer-group me-1"></i>{{ $t('properties.server_core_type') || $t('properties.loader_type') }}
                             </label>
-                            <div class="row g-2">
-                                <div class="col-4" v-for="lt in modalLoaderTypes" :key="lt.value">
-                                    <button class="btn w-100 py-1 fw-bold btn-sm" :class="modalLoaderType === lt.value ? 'btn-primary' : 'btn-outline-primary'" @click="selectModalLoaderType(lt.value)">
-                                        <i :class="lt.icon" class="me-1"></i>{{ lt.label }}
-                                    </button>
+                            
+                            <!-- 插件核心 -->
+                            <div class="mb-2.5">
+                                <div class="small text-muted fw-bold mb-1 d-flex align-items-center" style="font-size: 0.72rem;">
+                                    <i class="fa-solid fa-puzzle-piece text-info me-1"></i>{{ $t('properties.core_category_plugins') }}
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-6" v-for="lt in pluginLoaderTypes" :key="lt.value">
+                                        <button type="button" class="btn w-100 py-1.5 fw-bold btn-sm text-start d-flex align-items-center justify-content-between"
+                                            :class="modalLoaderType === lt.value ? 'btn-primary shadow-sm' : 'btn-outline-primary'"
+                                            @click="selectModalLoaderType(lt.value)">
+                                            <span><i :class="lt.icon" class="me-1.5"></i>{{ lt.label }}</span>
+                                            <span v-if="modalLoaderType === lt.value" class="badge bg-white text-primary rounded-pill small py-0 px-1">✓</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 模组核心 -->
+                            <div class="mb-2.5">
+                                <div class="small text-muted fw-bold mb-1 d-flex align-items-center" style="font-size: 0.72rem;">
+                                    <i class="fa-solid fa-microchip text-warning me-1"></i>{{ $t('properties.core_category_mods') }}
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-4" v-for="lt in moddedLoaderTypes" :key="lt.value">
+                                        <button type="button" class="btn w-100 py-1.5 fw-bold btn-sm text-start d-flex align-items-center justify-content-between"
+                                            :class="modalLoaderType === lt.value ? 'btn-primary shadow-sm' : 'btn-outline-primary'"
+                                            @click="selectModalLoaderType(lt.value)">
+                                            <span><i :class="lt.icon" class="me-1.5"></i>{{ lt.label }}</span>
+                                            <span v-if="modalLoaderType === lt.value" class="badge bg-white text-primary rounded-pill small py-0 px-1">✓</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 官方原版 -->
+                            <div>
+                                <div class="small text-muted fw-bold mb-1 d-flex align-items-center" style="font-size: 0.72rem;">
+                                    <i class="fa-solid fa-cube text-success me-1"></i>{{ $t('properties.core_category_vanilla') }}
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-12" v-for="lt in vanillaLoaderTypes" :key="lt.value">
+                                        <button type="button" class="btn w-100 py-1.5 fw-bold btn-sm text-start d-flex align-items-center justify-content-between"
+                                            :class="modalLoaderType === lt.value ? 'btn-success text-white shadow-sm' : 'btn-outline-success'"
+                                            @click="selectModalLoaderType(lt.value)">
+                                            <span><i :class="lt.icon" class="me-1.5"></i>{{ lt.label }}</span>
+                                            <span v-if="modalLoaderType === lt.value" class="badge bg-white text-success rounded-pill small py-0 px-1">✓</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -235,22 +279,29 @@ export default {
                                 <i class="fa-solid fa-gamepad me-1"></i>{{ $t('properties.target_mc') }}
                                 <span v-if="loadingMcVersions" class="spinner-border spinner-border-sm text-primary ms-1" role="status"></span>
                             </label>
-                            <CustomSelect v-model="selectedMc" :options="mcVersions" :placeholder="loadingMcVersions ? $t('common.loading') : $t('properties.choose_mc')" :disabled="loadingMcVersions" searchable @change="fetchLoaderVersions" />
+                            <CustomSelect v-model="selectedMc" :options="mcVersions" :placeholder="loadingMcVersions ? $t('common.loading') : $t('properties.choose_mc')" :disabled="loadingMcVersions" searchable @change="handleMcChange" />
                         </div>
 
-                        <div class="mb-3">
+                        <!-- 当不是 Vanilla 时展示版本/构建选择 -->
+                        <div class="mb-3" v-if="modalLoaderType !== 'vanilla'">
                             <label class="form-label fw-bold small">
-                                <i class="fa-solid fa-gear me-1"></i>{{ $t('properties.target_loader') }}
+                                <i class="fa-solid fa-gear me-1"></i>{{ isPluginLoader(modalLoaderType) ? ($t('properties.target_build') || '目标构建 (Build)') : $t('properties.target_loader') }}
                                 <span v-if="loadingLoaderVersions" class="spinner-border spinner-border-sm text-primary ms-1" role="status"></span>
                             </label>
-                            <CustomSelect v-model="selectedLoader" :options="loaderVersions" :placeholder="loadingLoaderVersions ? $t('common.loading') : $t('properties.choose_loader')" :disabled="loadingLoaderVersions || !selectedMc" searchable />
+                            <CustomSelect v-model="selectedLoader" :options="loaderVersions" :placeholder="loadingLoaderVersions ? $t('common.loading') : (isPluginLoader(modalLoaderType) ? ($t('properties.choose_build') || '选择构建版本') : $t('properties.choose_loader'))" :disabled="loadingLoaderVersions || !selectedMc" searchable />
+                        </div>
+
+                        <!-- 当是 Vanilla 时的友好说明卡片 -->
+                        <div v-else-if="selectedMc" class="alert alert-success-subtle border border-success-subtle small py-2 mb-3">
+                            <i class="fa-solid fa-circle-check text-success me-1"></i>
+                            {{ $t('properties.vanilla_note') }}
                         </div>
 
                         <div v-if="store.isRunning" class="alert alert-warning small py-2 mb-0">
                             <i class="fa-solid fa-triangle-exclamation me-1"></i>
                             {{ $t('properties.stop_server_first') }}
                         </div>
-                        <div v-else-if="selectedMc && selectedLoader" class="alert alert-info small py-2 mb-0">
+                        <div v-else-if="selectedMc && (selectedLoader || modalLoaderType === 'vanilla')" class="alert alert-info small py-2 mb-0">
                             <i class="fa-solid fa-circle-info me-1"></i>
                             {{ $t('properties.version_change_tips') }}
                         </div>
@@ -258,7 +309,7 @@ export default {
                     <div class="modal-footer border-0 pt-0">
                         <button type="button" class="btn btn-secondary rounded-pill px-4" @click="closeFabricModal">{{ $t('common.cancel') }}</button>
                         <button type="button" class="btn btn-primary rounded-pill px-4" @click="changeLoaderVersion"
-                            :disabled="!selectedMc || !selectedLoader || fabricChanging || store.isRunning">
+                            :disabled="!selectedMc || (!selectedLoader && modalLoaderType !== 'vanilla') || fabricChanging || store.isRunning">
                             <span v-if="fabricChanging" class="spinner-border spinner-border-sm me-1" role="status"></span>
                             <i v-else class="fa-solid fa-download me-1"></i>{{ $t('properties.apply') }}
                         </button>
@@ -295,17 +346,33 @@ export default {
         const fabricModalVisible = ref(false);
         const modalLoaderType = ref('fabric');
 
-        const modalLoaderTypes = computed(() => [
+        const isPluginLoader = (type) => ['paper', 'purpur', 'spigot'].includes(type);
+        const formatLoaderName = (lt) => {
+            if (!lt) return 'Vanilla';
+            if (lt === 'neoforge') return 'NeoForge';
+            return lt.charAt(0).toUpperCase() + lt.slice(1);
+        };
+
+        const pluginLoaderTypes = [
+            { value: 'paper', label: 'Paper (推荐)', icon: 'fa-solid fa-scroll' },
+            { value: 'purpur', label: 'Purpur (高性能)', icon: 'fa-solid fa-bolt' }
+        ];
+
+        const moddedLoaderTypes = [
             { value: 'fabric', label: 'Fabric', icon: 'fa-solid fa-feather' },
             { value: 'forge', label: 'Forge', icon: 'fa-solid fa-hammer' },
             { value: 'neoforge', label: 'NeoForge', icon: 'fa-solid fa-fire' }
-        ]);
+        ];
+
+        const vanillaLoaderTypes = [
+            { value: 'vanilla', label: 'Vanilla (官方原版)', icon: 'fa-solid fa-cube' }
+        ];
 
         const selectModalLoaderType = (type) => {
             if (modalLoaderType.value === type) return;
             modalLoaderType.value = type;
             selectedMc.value = '';
-            selectedLoader.value = '';
+            selectedLoader.value = (type === 'vanilla') ? 'standard' : '';
             loaderVersions.value = [];
             fetchMcVersions();
         };
@@ -494,7 +561,8 @@ export default {
                     try {
                         await api.post('/api/setup/reinstall');
                         showToast($t('panel_settings.reinstall_success'));
-                        setTimeout(() => { window.location.reload(); }, 2000);
+                        store.isSetup = false;
+                        store.view = 'dashboard';
                     } catch (e) {
                         showToast((e.response?.data?.error || e.message), 'danger');
                     }
@@ -536,14 +604,31 @@ export default {
             }
         };
 
+        const handleMcChange = () => {
+            if (modalLoaderType.value === 'vanilla') {
+                selectedLoader.value = 'standard';
+                loaderVersions.value = ['standard'];
+            } else {
+                fetchLoaderVersions();
+            }
+        };
+
         const fetchLoaderVersions = async () => {
             if (!selectedMc.value) return;
+            if (modalLoaderType.value === 'vanilla') {
+                selectedLoader.value = 'standard';
+                loaderVersions.value = ['standard'];
+                return;
+            }
             loadingLoaderVersions.value = true;
             selectedLoader.value = '';
             loaderVersions.value = [];
             try {
                 const res = await api.get(`/api/loader/versions/loader/${selectedMc.value}`, { params: { loaderType: modalLoaderType.value } });
                 loaderVersions.value = res.data;
+                if (isPluginLoader(modalLoaderType.value) && Array.isArray(res.data) && res.data.length > 0) {
+                    selectedLoader.value = res.data[0];
+                }
             } catch (e) {
                 showToast($t('properties.fetch_versions_fail'), 'danger');
             } finally {
@@ -552,16 +637,18 @@ export default {
         };
 
         const changeLoaderVersion = async () => {
-            if (!selectedMc.value || !selectedLoader.value) return;
+            const finalLoader = modalLoaderType.value === 'vanilla' ? 'standard' : selectedLoader.value;
+            if (!selectedMc.value || !finalLoader) return;
+            const coreName = formatLoaderName(modalLoaderType.value);
             openModal({
                 title: $t('properties.change_version'),
-                message: $t('properties.change_version_confirm', { mc: selectedMc.value, loader: selectedLoader.value }),
+                message: $t('properties.change_version_confirm', { type: coreName, mc: selectedMc.value, loader: finalLoader }),
                 callback: async () => {
                     fabricChanging.value = true;
                     closeFabricModal();
                     store.task.visible = true;
                     store.task.title = $t('properties.version_changing');
-                    store.task.message = `${selectedMc.value} / ${selectedLoader.value}`;
+                    store.task.message = `${coreName}: ${selectedMc.value} / ${finalLoader}`;
                     store.task.fileName = '';
                     store.task.percent = 0;
                     store.task.processedSize = 0;
@@ -572,7 +659,7 @@ export default {
                     try {
                         await api.post('/api/loader/change-version', {
                             gameVersion: selectedMc.value,
-                            loaderVersion: selectedLoader.value,
+                            loaderVersion: finalLoader,
                             loaderType: modalLoaderType.value
                         });
                         fabricChanging.value = false;
@@ -588,8 +675,6 @@ export default {
             });
         };
 
-
-
         onMounted(() => {
             loadProperties();
             updateIconPreview();
@@ -603,7 +688,8 @@ export default {
             askReinstall,
             currentVersion, currentLoaderType, mcVersions, loaderVersions, selectedMc, selectedLoader,
             loadingMcVersions, loadingLoaderVersions, fabricChanging, fabricModalVisible,
-            modalLoaderType, modalLoaderTypes, selectModalLoaderType,
+            modalLoaderType, isPluginLoader, formatLoaderName, pluginLoaderTypes, moddedLoaderTypes, vanillaLoaderTypes,
+            selectModalLoaderType, handleMcChange,
             openFabricModal, closeFabricModal, fetchLoaderVersions, changeLoaderVersion, store,
             filterText, visibleGroups, getLabel, saving, showAdvancedProperties
         };

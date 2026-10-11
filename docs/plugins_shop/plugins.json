@@ -107,10 +107,10 @@
     },
     {
         "id": "mc-panel-plugin-modrinth",
-        "name": "模组下载",
-        "version": "1.0.0",
+        "name": "资源下载",
+        "version": "2.0.0",
         "author": "4YStudio",
-        "description": "浏览 Modrinth 并下载模组到服务器。",
+        "description": "浏览 Modrinth 官方生态并一键下载安装模组、插件与数据包到服务器。",
         "category": "tools",
         "permissions": [
             "http",
@@ -118,7 +118,7 @@
             "command"
         ],
         "icon": "fa-cloud-arrow-down",
-        "fileSize": 9928,
+        "fileSize": 23722,
         "downloadUrl": "./plugins_shop/mc-panel-plugin-modrinth.zip"
     },
     {
@@ -142,7 +142,7 @@
         "category": "tools",
         "permissions": [],
         "icon": "fa-microphone",
-        "fileSize": 4731,
+        "fileSize": 7250,
         "downloadUrl": "./plugins_shop/mc-panel-plugin-voicechat.zip"
     }
 ]

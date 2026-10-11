@@ -2,7 +2,7 @@
  * MC Web Panel - Service Worker
  * 使用 "network first" 策略确保用户总是看到最新的商店内容
  */
-const CACHE_NAME = 'mc-web-panel-market-v2';
+const CACHE_NAME = 'mc-web-panel-landing-v2.6.0';
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();

@@ -4,43 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
-    <title>MC Web Panel - 轻量级 Minecraft 服务器管理面板</title>
-    <meta name="description" content="MC Web Panel 是一个轻量级、现代化且高性能的 Minecraft 服务器管理面板，基于 Node.js 和 Vue 3 构建。">
+    <title>MC Web Panel - 全架构现代化的轻量级 Minecraft 服务器管理面板</title>
+    <meta name="description" content="MC Web Panel 是一个全架构原生支持（官方原版/Paper/Purpur/Spigot/Fabric/Forge）、极致轻量且高性能的 Minecraft 服务器管理面板，基于 Node.js 与 Vue 3 构建。">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="css/landing.css?v=2">
+    <link rel="stylesheet" href="css/landing.css?v=2.6.0">
 </head>
 <body>
+    <!-- 顶部导航栏 -->
     <nav class="navbar" id="navbar">
         <div class="container nav-container">
             <a href="#" class="nav-brand">
                 <div class="nav-logo">
                     <i class="fa-solid fa-cube"></i>
                 </div>
-                <span class="nav-brand-text">MC Web Panel</span>
+                <div class="nav-brand-group">
+                    <span class="nav-brand-text">MC Web Panel</span>
+                    <span class="nav-brand-badge">v2.6.0</span>
+                </div>
             </a>
             <div class="nav-links" id="navLinks">
-                <a href="#features">特性</a>
-                <a href="#screenshots">截图</a>
+                <a href="#architectures">全生态架构</a>
+                <a href="#features">核心特性</a>
+                <a href="#scrolls">卷轴系统</a>
+                <a href="#screenshots">界面预览</a>
                 <a href="#quickstart">快速开始</a>
                 <a href="./market.html" class="nav-link-market">
                     <i class="fa-solid fa-puzzle-piece"></i> 插件市场
                 </a>
-                <a href="./scrolls-market.html" class="nav-link-market" style="color: #a78bfa;">
+                <a href="./scrolls-market.html" class="nav-link-scrolls">
                     <i class="fa-solid fa-scroll"></i> 卷轴市场
                 </a>
-                <a href="./scrolls-guide/" class="nav-link-doc">
-                    <i class="fa-solid fa-book-journal-whills"></i> 卷轴文档
-                </a>
-                <a href="./dev-guide/" class="nav-link-doc">
-                    <i class="fa-solid fa-book"></i> 插件文档
-                </a>
+                <div class="nav-docs-group">
+                    <a href="./scrolls-guide/" class="nav-link-doc">
+                        <i class="fa-solid fa-book-journal-whills"></i> 卷轴文档
+                    </a>
+                    <a href="./dev-guide/" class="nav-link-doc">
+                        <i class="fa-solid fa-book"></i> 插件文档
+                    </a>
+                </div>
                 <a href="https://github.com/4ystudio/mc-web-panel" target="_blank" class="nav-link-github">
                     <i class="fa-brands fa-github"></i> GitHub
                 </a>
@@ -51,27 +59,34 @@
         </div>
     </nav>
 
-    <section class="hero">
+    <!-- 英雄区 (Hero) -->
+    <header class="hero">
         <div class="hero-bg">
             <div class="hero-grid"></div>
-            <div class="hero-glow"></div>
+            <div class="hero-glow hero-glow-1"></div>
+            <div class="hero-glow hero-glow-2"></div>
+            <div class="hero-glow hero-glow-3"></div>
         </div>
         <div class="container hero-content">
             <div class="hero-badge">
-                <i class="fa-solid fa-sparkles"></i>
-                <span>开源免费 · 轻量高效</span>
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>v2.6.0 全架构大更新 · 原生支持三大生态 · 开源免费</span>
             </div>
             <h1 class="hero-title">
-                轻松管理你的<br>
-                <span class="hero-highlight">Minecraft 服务器</span>
+                全架构支持 · 极致轻量<br>
+                <span class="hero-highlight">Minecraft 服务器管理面板</span>
             </h1>
             <p class="hero-desc">
-                MC Web Panel 是一个基于 Node.js 和 Vue 3 构建的现代化 Minecraft 服务器管理面板。<br>
-                美观的 Web 界面，让你轻松管理 Fabric 服务器、玩家、文件等。
+                基于 Node.js 与 Vue 3 构建的现代化 Minecraft 服务端运维中枢。<br>
+                原生支持<strong>官方原版 (Vanilla)</strong>、<strong>现代插件服 (Paper / Purpur / Spigot)</strong> 与 <strong>模组服 (Fabric / Forge / NeoForge)</strong>。<br>
+                流式背压内存控制，低至 512MB VPS 即可轻量起步；独创<strong>零客户端模组</strong>的卷轴脚本引擎，赋予开服无限自由。
             </p>
             <div class="hero-actions">
                 <a href="#quickstart" class="btn btn-primary">
                     <i class="fa-solid fa-rocket"></i> 快速开始
+                </a>
+                <a href="#architectures" class="btn btn-secondary">
+                    <i class="fa-solid fa-layer-group"></i> 探索全生态支持
                 </a>
                 <a href="https://github.com/4ystudio/mc-web-panel" target="_blank" class="btn btn-outline">
                     <i class="fa-brands fa-github"></i> 查看源码
@@ -79,132 +94,293 @@
             </div>
             <div class="hero-stats">
                 <div class="stat-item">
-                    <span class="stat-value">Node.js</span>
-                    <span class="stat-label">后端引擎</span>
+                    <span class="stat-value">全架构原生支持</span>
+                    <span class="stat-label">Vanilla · Paper · Fabric · Forge</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
-                    <span class="stat-value">Vue 3</span>
-                    <span class="stat-label">前端框架</span>
+                    <span class="stat-value">低至 512MB</span>
+                    <span class="stat-label">背压流控 · 单进程模式</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
-                    <span class="stat-value">MIT</span>
-                    <span class="stat-label">开源协议</span>
+                    <span class="stat-value">双扩展生态</span>
+                    <span class="stat-label">模块化插件 + 原生免端模组卷轴</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value">MIT 开源</span>
+                    <span class="stat-label">社区驱动 · 持续演进</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 全架构生态板块 (Architectures Section) -->
+    <section class="architectures" id="architectures">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">全架构原生支持</span>
+                <h2 class="section-title">打破核心壁垒，三种生态自由掌舵</h2>
+                <p class="section-desc">不论是追求纯粹官方原版、高并发抗压插件服，还是无限玩法的现代模组服，MC Web Panel 皆提供深度定制的运行环境与隔离防护</p>
+            </div>
+            <div class="arch-grid">
+                <!-- 官方原版 -->
+                <div class="arch-card arch-vanilla">
+                    <div class="arch-badge">
+                        <i class="fa-solid fa-gem"></i> 纯净原汁原味
+                    </div>
+                    <div class="arch-header">
+                        <div class="arch-icon">
+                            <i class="fa-solid fa-box"></i>
+                        </div>
+                        <div>
+                            <h3>官方原版 (Vanilla)</h3>
+                            <span class="arch-sub">Mojang 官方 Version Manifest v2 直连</span>
+                        </div>
+                    </div>
+                    <p class="arch-text">
+                        一键拉取 Mojang 官方最新稳定版与快照版单 Jar 核心，无需外部启动器。
+                    </p>
+                    <ul class="arch-features">
+                        <li><i class="fa-solid fa-check"></i> 直连 Mojang 官方构建通道与 SHA1 完整性校验</li>
+                        <li><i class="fa-solid fa-check"></i> 自动写入 <code>eula=true</code> 协议守护，开箱即启</li>
+                        <li><i class="fa-solid fa-check"></i> 搭配<strong>卷轴系统</strong>，无需客户端安装任何模组即可实现丰富扩展</li>
+                    </ul>
+                </div>
+
+                <!-- 现代插件服 -->
+                <div class="arch-card arch-plugins">
+                    <div class="arch-badge">
+                        <i class="fa-solid fa-bolt"></i> 极致性能调优
+                    </div>
+                    <div class="arch-header">
+                        <div class="arch-icon">
+                            <i class="fa-solid fa-plug"></i>
+                        </div>
+                        <div>
+                            <h3>现代插件服 (Paper / Purpur / Spigot)</h3>
+                            <span class="arch-sub">PaperMC v3 与 Purpur v2 API 深度适配</span>
+                        </div>
+                    </div>
+                    <p class="arch-text">
+                        专为大型多人服务器设计的极速插件架构，动态获取最新构建与原生元数据解包。
+                    </p>
+                    <ul class="arch-features">
+                        <li><i class="fa-solid fa-check"></i> 实时动态解析 PaperMC & Purpur 官方构建构建库</li>
+                        <li><i class="fa-solid fa-check"></i> 原生轻量流式提取 <code>plugin.yml</code>，毫秒级解析插件信息</li>
+                        <li><i class="fa-solid fa-check"></i> 专属 <code>plugins/</code> 物理目录隔离与原子重命名无损启禁用</li>
+                    </ul>
+                </div>
+
+                <!-- 现代模组服 -->
+                <div class="arch-card arch-mods">
+                    <div class="arch-badge">
+                        <i class="fa-solid fa-puzzle-piece"></i> 无限玩法拓展
+                    </div>
+                    <div class="arch-header">
+                        <div class="arch-icon">
+                            <i class="fa-solid fa-cubes"></i>
+                        </div>
+                        <div>
+                            <h3>现代模组服 (Fabric / Forge / NeoForge)</h3>
+                            <span class="arch-sub">主流加载器全兼容与深度 Jar 元数据提取</span>
+                        </div>
+                    </div>
+                    <p class="arch-text">
+                        从轻快现代的 Fabric/Quilt 到经典厚重的 Forge/NeoForge，提供全链路模组管控。
+                    </p>
+                    <ul class="arch-features">
+                        <li><i class="fa-solid fa-check"></i> 自动提取 <code>fabric.mod.json</code>、<code>mods.toml</code> 与高清图标</li>
+                        <li><i class="fa-solid fa-check"></i> 资源下载插件对接 Modrinth API，支持前置模组必要依赖递归联动解析</li>
+                        <li><i class="fa-solid fa-check"></i> 专属 <code>mods/</code> 目录严格隔离，彻底杜绝目录错乱</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- 卷轴系统专属介绍 (Scrolls Banner) -->
+    <section class="scrolls-highlight" id="scrolls">
+        <div class="container">
+            <div class="scrolls-banner">
+                <div class="scrolls-glow"></div>
+                <div class="scrolls-content">
+                    <div class="scrolls-badge">
+                        <i class="fa-solid fa-scroll"></i>
+                        <span>独创黑科技 · 卷轴脚本引擎 (Scrolls Engine)</span>
+                    </div>
+                    <h2 class="scrolls-title">零客户端模组 · 原版进服即玩</h2>
+                    <p class="scrolls-desc">
+                        想让服务器拥有「单人快速跳过夜晚」、「连锁砍树」、「进服动态欢迎」、「死亡墓碑」等功能，却又不想强制每位玩家下载安装复杂的 Forge/Fabric 客户端？<br>
+                        <strong>卷轴系统</strong>通过纯服务端事件拦截与行为指令编排，让玩家使用官方原版纯净客户端即可畅享自动化玩法！
+                    </p>
+                    <div class="scrolls-tags">
+                        <span class="scroll-tag"><i class="fa-solid fa-feather"></i> 极轻量事件驱动</span>
+                        <span class="scroll-tag"><i class="fa-solid fa-shield-cat"></i> 原版客户端零门槛</span>
+                        <span class="scroll-tag"><i class="fa-solid fa-shop"></i> 官方在线卷轴市场</span>
+                        <span class="scroll-tag"><i class="fa-solid fa-code"></i> 极简开放编写标准</span>
+                    </div>
+                    <div class="scrolls-actions">
+                        <a href="./scrolls-market.html" class="btn btn-scrolls">
+                            <i class="fa-solid fa-store"></i> 浏览卷轴市场
+                        </a>
+                        <a href="./scrolls-guide/" class="btn btn-outline-scrolls">
+                            <i class="fa-solid fa-book-journal-whills"></i> 查看卷轴开发文档
+                        </a>
+                    </div>
+                </div>
+                <div class="scrolls-visual">
+                    <div class="scrolls-card-demo">
+                        <div class="demo-header">
+                            <span class="demo-dot red"></span>
+                            <span class="demo-dot yellow"></span>
+                            <span class="demo-dot green"></span>
+                            <span class="demo-title">scroll.json & index.js</span>
+                        </div>
+                        <div class="demo-code">
+                            <span class="c-comment">// 独创原版无感事件拦截</span>
+                            <span class="c-keyword">onPlayerSleep</span>: (player) => {<br>
+                            &nbsp;&nbsp;<span class="c-keyword">broadcast</span>(<span class="c-string">`§6[入睡投票] §e${player} §a已躺上床铺...`</span>);<br>
+                            &nbsp;&nbsp;<span class="c-keyword">startFastForwardDay</span>({ timeout: <span class="c-number">5</span> });<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心特性 (Features) -->
     <section class="features" id="features">
         <div class="container">
             <div class="section-header">
                 <span class="section-tag">核心特性</span>
-                <h2 class="section-title">为 Minecraft 服务器管理而生</h2>
-                <p class="section-desc">涵盖服务器管理的方方面面，从实时监控到文件管理，从玩家管理到插件扩展</p>
+                <h2 class="section-title">为专业 Minecraft 运维而打磨</h2>
+                <p class="section-desc">从底层内存压减到直观控制台，从自动化依赖解析到无损备份恢复，提供行云流水般的开服体验</p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon" style="--accent: #4d8ef7;">
-                        <i class="fa-solid fa-chart-line"></i>
+                    <div class="feature-icon" style="--accent: #22c55e;">
+                        <i class="fa-solid fa-microchip"></i>
                     </div>
-                    <h3>实时监控</h3>
-                    <p>实时查看服务器状态、CPU/内存使用率和控制台输出，一切尽在掌握</p>
+                    <h3>极致内存压减与背压流控</h3>
+                    <p>Sharp 原生 C++ 缓存压减 90%，切片合并全程受 Backpressure 背压控制，大文件合并内存锁死在 &lt;10MB，杜绝 OOM；支持 <code>--no-cluster</code> 单进程超低配模式。</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon" style="--accent: #22c55e;">
-                        <i class="fa-solid fa-folder-open"></i>
+                    <div class="feature-icon" style="--accent: #4d8ef7;">
+                        <i class="fa-solid fa-download"></i>
                     </div>
-                    <h3>文件管理</h3>
-                    <p>支持在线上传、下载、编辑和解压文件，无需 SSH 连接服务器</p>
+                    <h3>资源下载与前置联动解析</h3>
+                    <p>重构 Modrinth 资源下载器，覆盖插件、模组、数据包、资源包四大分类；支持必要前置多层递归解析、防死循环与已安装模组智能跳过。</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon" style="--accent: #f59e0b;">
-                        <i class="fa-solid fa-users"></i>
+                        <i class="fa-solid fa-chart-line"></i>
                     </div>
-                    <h3>玩家管理</h3>
-                    <p>管理白名单、OP、黑名单，以及踢出/封禁/传送在线玩家</p>
+                    <h3>实时性能监控看板</h3>
+                    <p>实时采样服务器 CPU、内存使用曲线，即时查看在线玩家名单与头像；WebSocket 极速双向流，万级日志平滑缓冲无卡顿渲染。</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon" style="--accent: #a855f7;">
-                        <i class="fa-solid fa-puzzle-piece"></i>
+                        <i class="fa-solid fa-folder-tree"></i>
                     </div>
-                    <h3>插件系统</h3>
-                    <p>模块化架构，支持开发者轻松扩展后端逻辑与前端 UI</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon" style="--accent: #ec4899;">
-                        <i class="fa-solid fa-palette"></i>
-                    </div>
-                    <h3>外观自定义</h3>
-                    <p>个性化主题设置，支持自定义背景图、模糊度及透明度</p>
+                    <h3>文件管理与原生解压</h3>
+                    <p>支持多文件在线上传下载、高亮编辑器与文本搜索定位；集成原生系统级 unzip / tar 流式高保真还原，保留 POSIX 权限与软链接。</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon" style="--accent: #06b6d4;">
                         <i class="fa-solid fa-cloud-arrow-up"></i>
                     </div>
-                    <h3>内网穿透</h3>
-                    <p>内置 FRP 管理，轻松实现公网访问，无需公网 IP</p>
+                    <h3>内置 FRP 内网穿透</h3>
+                    <p>集成轻量 FRP 穿透客户端，无需公网 IP 与路由器端口映射；支持自动重连与节点测速，朋友随时随地快速联机。</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon" style="--accent: #ef4444;">
                         <i class="fa-solid fa-shield-halved"></i>
                     </div>
-                    <h3>安全可靠</h3>
-                    <p>支持 2FA 双重验证（Google 身份验证器），保护面板安全</p>
+                    <h3>安全防护与 2FA 认证</h3>
+                    <p>基于 TOTP 算法支持 Google Authenticator 等双重身份验证器；支持 CLI 快捷重置密钥、密码盐值加密与敏感目录权限隔离。</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon" style="--accent: #8b5cf6;">
-                        <i class="fa-solid fa-box-archive"></i>
+                        <i class="fa-solid fa-sliders"></i>
                     </div>
-                    <h3>备份管理</h3>
-                    <p>强大的备份还原系统，支持快照和增量备份</p>
+                    <h3>Server.properties 可视化中心</h3>
+                    <p>中文友好的全景参数配置中心，针对 Vanilla、Paper、Fabric 自动展示专属优化建议，参数修改即时生效。</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon" style="--accent: #14b8a6;">
-                        <i class="fa-solid fa-mobile-screen"></i>
+                        <i class="fa-solid fa-box-archive"></i>
                     </div>
-                    <h3>响应式设计</h3>
-                    <p>针对移动端和桌面端深度优化的 UI/UX 体验，随时随地管理</p>
+                    <h3>安全备份与多方案快照</h3>
+                    <p>多维备份系统，支持整服打包、独立地图备份与核心模组备份；备份包结构安全过滤，一键安全回滚世界进度。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon" style="--accent: #ec4899;">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                    </div>
+                    <h3>全链路移动端深度重构</h3>
+                    <p>对手机端与平板端进行地毯式 UI/UX 优化，重新编排控制台、资源下载筛选、安装向导与属性管理器，单手即可轻松开服。</p>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- 界面展示 (Screenshots) -->
     <section class="screenshots" id="screenshots">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">界面展示</span>
-                <h2 class="section-title">简洁美观的管理界面</h2>
-                <p class="section-desc">现代化的深色主题设计，直观的操作体验</p>
+                <span class="section-tag">界面预览</span>
+                <h2 class="section-title">高颜值深色主题，掌控全局</h2>
+                <p class="section-desc">科技质感玻璃拟态设计，直观清晰的操作流，信息层级分明</p>
             </div>
             <div class="screenshots-grid">
-                <div class="screenshot-card screenshot-main">
+                <div class="screenshot-card">
+                    <div class="window-bar">
+                        <div class="window-controls">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span class="window-title">实例详情 - 实时控制台与资源监控</span>
+                    </div>
                     <img src="./img/instance-detail.png" alt="实例详情界面" loading="lazy">
-                    <div class="screenshot-label">实例详情 - 实时监控与控制台</div>
+                    <div class="screenshot-label">
+                        <i class="fa-solid fa-terminal"></i> 毫秒级命令交互 · 实时资源利用率 · 在线玩家面板
+                    </div>
                 </div>
-                <div class="screenshot-card screenshot-main">
+                <div class="screenshot-card">
+                    <div class="window-bar">
+                        <div class="window-controls">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span class="window-title">实例管理 - 多服务端集中治理</span>
+                    </div>
                     <img src="./img/instance-list.png" alt="实例列表界面" loading="lazy">
-                    <div class="screenshot-label">实例列表 - 多实例管理</div>
+                    <div class="screenshot-label">
+                        <i class="fa-solid fa-layer-group"></i> 多实例隔离运行 · 核心架构一目了然 · 快速切换与启停
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- 快速开始 (Quickstart) -->
     <section class="quickstart" id="quickstart">
         <div class="container">
             <div class="section-header">
                 <span class="section-tag">快速开始</span>
-                <h2 class="section-title">三步启动你的面板</h2>
-                <p class="section-desc">从下载到运行，只需几分钟</p>
+                <h2 class="section-title">几分钟内点亮你的第一座面板</h2>
+                <p class="section-desc">提供单可执行二进制文件与源码部署两种方式，极速无痛上手</p>
             </div>
+
+            <!-- 三步走步骤卡片 -->
             <div class="steps">
                 <div class="step-card">
                     <div class="step-number">1</div>
-                    <h3>下载</h3>
-                    <p>从 GitHub Releases 下载对应平台的可执行文件</p>
+                    <h3>下载 Releases</h3>
+                    <p>从 GitHub Releases 下载适用于 Linux、Windows 或 macOS 的单一运行程序</p>
                     <a href="https://github.com/4ystudio/mc-web-panel/releases" target="_blank" class="step-link">
-                        前往下载 <i class="fa-solid fa-arrow-right"></i>
+                        前往 Releases <i class="fa-solid fa-arrow-right"></i>
                     </a>
                 </div>
                 <div class="step-connector">
@@ -212,10 +388,13 @@
                 </div>
                 <div class="step-card">
                     <div class="step-number">2</div>
-                    <h3>运行</h3>
-                    <p>将文件放在空目录中，运行可执行文件</p>
-                    <div class="step-code">
-                        <code>./MWP-linux-amd64 start</code>
+                    <h3>赋予权限并运行</h3>
+                    <p>在目标目录下执行启动命令，可加入 <code>--no-cluster</code> 开启极轻量单进程模式</p>
+                    <div class="terminal-snippet">
+                        <span id="cmdStart">./MWP-linux-amd64 start</span>
+                        <button class="copy-btn" data-copy-target="#cmdStart" title="复制代码">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="step-connector">
@@ -223,48 +402,103 @@
                 </div>
                 <div class="step-card">
                     <div class="step-number">3</div>
-                    <h3>访问</h3>
-                    <p>打开浏览器访问面板，跟随设置向导配置</p>
-                    <div class="step-code">
-                        <code>http://localhost:3000</code>
+                    <h3>浏览器配置向导</h3>
+                    <p>访问本地或云服务器公网 IP，跟随引导向导配置核心并开始游戏</p>
+                    <div class="terminal-snippet">
+                        <span id="cmdUrl">http://localhost:3000</span>
+                        <button class="copy-btn" data-copy-target="#cmdUrl" title="复制链接">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div class="source-section">
-                <div class="source-card">
-                    <div class="source-icon">
-                        <i class="fa-solid fa-terminal"></i>
+            <!-- 命令行进阶与源码运行终端 -->
+            <div class="terminals-grid">
+                <!-- 源码运行 -->
+                <div class="terminal-box">
+                    <div class="terminal-header">
+                        <div class="window-controls">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span class="terminal-title"><i class="fa-brands fa-git-alt"></i> 从源码构建运行 (Node.js 18+)</span>
+                        <button class="copy-btn" data-copy-target="#sourceCode" title="复制代码">
+                            <i class="fa-regular fa-copy"></i> 复制命令
+                        </button>
                     </div>
-                    <div class="source-info">
-                        <h3>从源码运行</h3>
-                        <p>如果你希望从源码运行面板（需要 Node.js 18+）</p>
+                    <div class="terminal-body">
+                        <pre><code id="sourceCode"><span class="c-comment"># 1. 克隆代码仓库</span>
+git clone https://github.com/4ystudio/mc-web-panel.git
+cd mc-web-panel
+
+<span class="c-comment"># 2. 安装依赖并启动</span>
+npm install
+npm run start</code></pre>
                     </div>
-                    <div class="source-code">
-                        <code>git clone https://github.com/4ystudio/mc-web-panel.git</code>
-                        <code>cd mc-web-panel && npm install</code>
-                        <code>npm run start</code>
+                </div>
+
+                <!-- 实用管理命令 -->
+                <div class="terminal-box">
+                    <div class="terminal-header">
+                        <div class="window-controls">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span class="terminal-title"><i class="fa-solid fa-terminal"></i> 常用运维 CLI 命令</span>
+                        <button class="copy-btn" data-copy-target="#cliOptions" title="复制代码">
+                            <i class="fa-regular fa-copy"></i> 复制命令
+                        </button>
+                    </div>
+                    <div class="terminal-body">
+                        <pre><code id="cliOptions"><span class="c-comment"># 低配 VPS 轻量单进程启动 (立省 45MB 底噪内存)</span>
+./MWP-linux-amd64 start --no-cluster
+
+<span class="c-comment"># 修改监听地址与端口</span>
+./MWP-linux-amd64 host 0.0.0.0 3000
+
+<span class="c-comment"># 重启面板 / 停止服务 / 重置 2FA 密钥</span>
+./MWP-linux-amd64 restart
+./MWP-linux-amd64 stop
+./MWP-linux-amd64 reset</code></pre>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- 插件与拓展生态 (Plugins Section) -->
     <section class="plugins-section">
         <div class="container">
             <div class="section-header">
-                <span class="section-tag">插件生态</span>
-                <h2 class="section-title">强大的插件扩展能力</h2>
-                <p class="section-desc">模块化架构，让开发者轻松扩展面板功能</p>
+                <span class="section-tag">扩展生态</span>
+                <h2 class="section-title">官方精选插件生态</h2>
+                <p class="section-desc">不仅有纯原版免端模组的「卷轴」，更有赋能全栈运维的丰富插件</p>
             </div>
             <div class="plugins-grid">
                 <div class="plugin-card">
-                    <div class="plugin-icon" style="color: #f59e0b;">
+                    <div class="plugin-icon" style="color: #4d8ef7;">
+                        <i class="fa-solid fa-cubes-stacked"></i>
+                    </div>
+                    <div class="plugin-info">
+                        <h4>资源下载 (Modrinth)</h4>
+                        <p>打通插件/模组/数据包/资源包四大生态，必要前置依赖自动递归解析与联动安装</p>
+                    </div>
+                </div>
+                <div class="plugin-card">
+                    <div class="plugin-icon" style="color: #a855f7;">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                    </div>
+                    <div class="plugin-info">
+                        <h4>语音聊天设置 (Voice Chat)</h4>
+                        <p>完美适配 Simple Voice Chat，直接在面板中配置语音端口、加密方式与房间参数</p>
+                    </div>
+                </div>
+                <div class="plugin-card">
+                    <div class="plugin-icon" style="color: #06b6d4;">
                         <i class="fa-solid fa-cloud-arrow-up"></i>
                     </div>
                     <div class="plugin-info">
                         <h4>FRP 内网穿透</h4>
-                        <p>内置的内网穿透管理器，轻松实现公网访问</p>
+                        <p>内置自动化穿透隧道管理器，无需公网 IP 实现高速多人联机与面板公网访问</p>
                     </div>
                 </div>
                 <div class="plugin-card">
@@ -272,40 +506,44 @@
                         <i class="fa-solid fa-user-shield"></i>
                     </div>
                     <div class="plugin-info">
-                        <h4>Easy Auth</h4>
-                        <p>管理已注册用户、修改密码和注销用户</p>
+                        <h4>认证管理 (Easy Auth)</h4>
+                        <p>管理已注册玩家账号、找回/修改密码与用户注销，保护离线服务器账号安全</p>
                     </div>
                 </div>
                 <div class="plugin-card">
-                    <div class="plugin-icon" style="color: #4d8ef7;">
+                    <div class="plugin-icon" style="color: #f59e0b;">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </div>
+                    <div class="plugin-info">
+                        <h4>服务器地图 (Server Map)</h4>
+                        <p>轻量在线地图渲染与查看，直观浏览主世界、下界及末地地貌与领地分布</p>
+                    </div>
+                </div>
+                <div class="plugin-card">
+                    <div class="plugin-icon" style="color: #ec4899;">
                         <i class="fa-solid fa-box-archive"></i>
                     </div>
                     <div class="plugin-info">
-                        <h4>Advanced Backup</h4>
-                        <p>创建和还原备份，支持快照和增量备份</p>
-                    </div>
-                </div>
-                <div class="plugin-card">
-                    <div class="plugin-icon" style="color: #a855f7;">
-                        <i class="fa-solid fa-microphone"></i>
-                    </div>
-                    <div class="plugin-info">
-                        <h4>Simple Voice Chat</h4>
-                        <p>直接在面板中配置语音聊天设置</p>
+                        <h4>高级备份 (Advanced Backup)</h4>
+                        <p>提供多重备份策略，支持一键创建世界快照、自动清理历史归档与完整还原</p>
                     </div>
                 </div>
             </div>
             <div class="plugins-cta">
-                <a href="./dev-guide/" class="btn btn-primary">
-                    <i class="fa-solid fa-book"></i> 查看开发文档
+                <a href="./market.html" class="btn btn-primary">
+                    <i class="fa-solid fa-puzzle-piece"></i> 前往插件市场
                 </a>
-                <a href="https://github.com/4ystudio/mc-web-panel" target="_blank" class="btn btn-outline">
-                    <i class="fa-solid fa-plus"></i> 开发自己的插件
+                <a href="./scrolls-market.html" class="btn btn-secondary">
+                    <i class="fa-solid fa-scroll"></i> 前往卷轴市场
+                </a>
+                <a href="./dev-guide/" class="btn btn-outline">
+                    <i class="fa-solid fa-book"></i> 开发自己的插件
                 </a>
             </div>
         </div>
     </section>
 
+    <!-- 页脚 (Footer) -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -313,26 +551,42 @@
                     <div class="nav-logo">
                         <i class="fa-solid fa-cube"></i>
                     </div>
-                    <span class="footer-brand-text">MC Web Panel</span>
+                    <div>
+                        <span class="footer-brand-text">MC Web Panel</span>
+                        <p class="footer-brand-desc">现代、轻量、全架构支持的 Minecraft 服务器管理面板</p>
+                    </div>
                 </div>
-                <div class="footer-links">
-                    <a href="#features">特性</a>
-                    <a href="#screenshots">截图</a>
-                    <a href="#quickstart">快速开始</a>
-                    <a href="./market.html">插件市场</a>
-                    <a href="./scrolls-market.html">卷轴市场</a>
-                    <a href="./scrolls-guide/">卷轴开发文档</a>
-                    <a href="./dev-guide/">插件开发文档</a>
-                    <a href="https://github.com/4ystudio/mc-web-panel" target="_blank">GitHub</a>
+                <div class="footer-links-grid">
+                    <div class="footer-col">
+                        <h4>导航</h4>
+                        <a href="#architectures">全生态架构</a>
+                        <a href="#features">核心特性</a>
+                        <a href="#scrolls">卷轴系统</a>
+                        <a href="#quickstart">快速开始</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>扩展生态</h4>
+                        <a href="./market.html">插件市场</a>
+                        <a href="./scrolls-market.html">卷轴市场</a>
+                        <a href="./scrolls-guide/">卷轴开发手册</a>
+                        <a href="./dev-guide/">插件开发指南</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>社区与开源</h4>
+                        <a href="https://github.com/4ystudio/mc-web-panel" target="_blank"><i class="fa-brands fa-github"></i> GitHub 仓库</a>
+                        <a href="https://github.com/4ystudio/mc-web-panel/releases" target="_blank"><i class="fa-solid fa-tag"></i> 历史版本发布</a>
+                        <a href="https://github.com/4ystudio/mc-web-panel/issues" target="_blank"><i class="fa-solid fa-circle-exclamation"></i> 问题反馈</a>
+                        <a href="https://github.com/4ystudio/mc-web-panel/blob/main/LICENSE" target="_blank"><i class="fa-solid fa-scale-balanced"></i> MIT 许可协议</a>
+                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>Released under the <a href="https://github.com/4ystudio/mc-web-panel/blob/main/LICENSE" target="_blank">MIT License</a></p>
-                <p>Made with <i class="fa-solid fa-heart" style="color: #ef4444;"></i> by <a href="https://github.com/4ystudio" target="_blank">4ystudio</a></p>
+                <p>© 2026 MC Web Panel · Released under the <a href="https://github.com/4ystudio/mc-web-panel/blob/main/LICENSE" target="_blank">MIT License</a></p>
+                <p>Crafted with <i class="fa-solid fa-heart" style="color: #ef4444;"></i> by <a href="https://github.com/4ystudio" target="_blank">4ystudio</a> & Open Source Contributors</p>
             </div>
         </div>
     </footer>
 
-    <script src="js/landing.js?v=2"></script>
+    <script src="js/landing.js?v=2.6.0"></script>
 </body>
 </html>

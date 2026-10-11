@@ -188,12 +188,12 @@ export default {
          @drop.prevent="dragCounter = 0; isDragging = false; handleDrop($event)">
         <div v-if="notFound" class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
             <i class="fa-solid fa-folder-open fa-4x mb-3 opacity-25"></i>
-            <h4>{{ $t('files.folder_not_found', { name: 'mods' }) }}</h4>
+            <h4>{{ $t('files.folder_not_found', { name: extensionDir }) }}</h4>
         </div>
 
         <template v-else>
             <div class="page-header d-flex justify-content-between align-items-center">
-                <h3 class="m-0 fw-bold">{{ $t('mods.title') }}</h3>
+                <h3 class="m-0 fw-bold">{{ isPluginMode ? $t('mods.plugins_title') : $t('mods.title') }}</h3>
             </div>
             
 
@@ -216,14 +216,14 @@ export default {
                         </button>
                     </div>
                     <div class="ms-auto flex-shrink-0 d-flex align-items-center gap-2">
-                        <!-- 冲突模组按钮 -->
+                        <!-- 冲突检测按钮 -->
                         <button v-if="duplicateModGroups.length > 0" class="btn btn-sm btn-outline-warning rounded-pill px-2.5 px-md-3 shadow-sm fw-bold d-flex align-items-center gap-1.5" @click="openConflictModal" type="button">
                             <i class="fa-solid fa-triangle-exclamation"></i>
                             <span>{{ $t('mods.conflict_btn') }}</span>
                             <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.65rem; padding: 0.25em 0.55em; line-height: 1;">{{ duplicateModGroups.length }}</span>
                         </button>
                         
-                        <!-- 上传模组下拉 -->
+                        <!-- 上传下拉 -->
                         <div class="dropdown">
                             <input type="file" ref="modInput" multiple class="d-none" @change="(e)=>uploadFiles(e)">
                             <input type="file" ref="modFolderInput" webkitdirectory multiple class="d-none" @change="(e)=>uploadFiles(e)">
@@ -232,7 +232,7 @@ export default {
                                 @click="toggleUploadDropdown($event)"
                                 type="button">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
-                                <span>{{ $t('mods.upload_mod') }}</span>
+                                <span>{{ isPluginMode ? $t('mods.upload_plugin') : $t('mods.upload_mod') }}</span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 py-1 mt-1"
                                 :class="{ show: uploadDropdownVisible }"
@@ -255,7 +255,7 @@ export default {
                     <div v-if="isDragging" class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="z-index: 10; background: rgba(var(--bs-primary-rgb), 0.15); backdrop-filter: blur(2px); border-radius: 12px; border: 3px dashed var(--bs-primary);">
                         <div class="text-center text-primary">
                             <i class="fa-solid fa-cloud-arrow-up fa-3x mb-2"></i>
-                            <h5 class="fw-bold">拖拽模组文件到此处上传</h5>
+                            <h5 class="fw-bold">{{ isPluginMode ? '拖拽插件文件到此处上传' : '拖拽模组文件到此处上传' }}</h5>
                         </div>
                     </div>
                     <!-- Desktop Table View -->
@@ -283,7 +283,10 @@ export default {
                                 <tr v-if="!loadingList && filteredFiles.length === 0">
                                     <td colspan="4" class="text-center py-5 text-muted">
                                         <i class="fa-solid fa-box-open fa-2x mb-2 opacity-25 d-block"></i>
-                                        {{ $t('mods.empty') }}
+                                        <div class="fw-medium">{{ isPluginMode ? $t('mods.empty_plugins') : $t('mods.empty') }}</div>
+                                        <button class="btn btn-xs btn-outline-primary rounded-pill px-3 mt-3 fw-bold" @click="store.view = 'modrinth-view'">
+                                            <i class="fa-solid fa-cloud-arrow-down me-1"></i>{{ $t('resources.title') || '资源下载' }}
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -302,7 +305,10 @@ export default {
                         </template>
                         <div v-if="!loadingList && filteredFiles.length === 0" class="text-center py-5 text-muted">
                             <i class="fa-solid fa-box-open fa-2x mb-2 opacity-25 d-block"></i>
-                            {{ $t('mods.empty') }}
+                            <div class="fw-medium">{{ isPluginMode ? $t('mods.empty_plugins') : $t('mods.empty') }}</div>
+                            <button class="btn btn-xs btn-outline-primary rounded-pill px-3 mt-3 fw-bold" @click="store.view = 'modrinth-view'">
+                                <i class="fa-solid fa-cloud-arrow-down me-1"></i>{{ $t('resources.title') || '资源下载' }}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -648,6 +654,17 @@ export default {
         const $t = proxy.$t;
         const loadingList = ref(false);
 
+        const currentInstance = computed(() => {
+            return (store.instances || []).find(i => i.id === store.currentInstanceId) 
+                || (store.instanceList || []).find(i => i.id === store.currentInstanceId)
+                || null;
+        });
+        const isPluginMode = computed(() => {
+            const lt = currentInstance.value?.loaderType || store.stats?.loaderType || '';
+            return ['paper', 'purpur', 'spigot'].includes(lt);
+        });
+        const extensionDir = computed(() => isPluginMode.value ? 'plugins' : 'mods');
+
         // Drag & Drop State
         const isDragging = ref(false);
         const dragCounter = ref(0);
@@ -902,7 +919,7 @@ export default {
 
             const controller = new AbortController();
             store.task.visible = true;
-            store.task.title = '上传模组';
+            store.task.title = isPluginMode.value ? '上传插件' : '上传模组';
             store.task.percent = 0;
             store.task.processedSize = 0;
             store.task.totalSize = totalSize;
@@ -943,7 +960,7 @@ export default {
                         store.task.fileName = item.relativePath;
                         const fd = new FormData();
                         fd.append('files', item.file, item.relativePath);
-                        fd.append('path', 'mods');
+                        fd.append('path', extensionDir.value);
                         fd.append('fileNames', JSON.stringify([item.relativePath]));
 
                         await api.post('/api/files/upload', fd, {
@@ -969,7 +986,7 @@ export default {
                         completeUrl: '/api/files/chunk/complete',
                         cancelUrl: '/api/files/chunk/cancel',
                         fileName: item.relativePath,
-                        extraInitData: { targetPath: 'mods' },
+                        extraInitData: { targetPath: extensionDir.value },
                         signal: controller.signal,
                         onProgress: (bytesDone, bytesTotal, chunkNum, totalChunks) => {
                             updateProgress(bytesDone, item.relativePath);
@@ -995,7 +1012,7 @@ export default {
         };
 
         const operateFiles = async (action, files) => {
-            const fullFiles = files.map(f => 'mods/' + f);
+            const fullFiles = files.map(f => extensionDir.value + '/' + f);
             try {
                 await api.post('/api/files/operate', { action, sources: fullFiles, destination: '' });
                 showToast($t('common.success'));
@@ -1119,6 +1136,7 @@ export default {
             formatSize, duplicateModGroups, resolveConflictKeep, getEarliestTime, formatModTime,
             uploadDropdownVisible, toggleUploadDropdown,
             conflictModal, openConflictModal,
+            isPluginMode, extensionDir,
             DEFAULT_ICON
         };
     }

@@ -3599,9 +3599,20 @@ export default {
             });
         };
 
-        const onSetupComplete = () => {
+        const onSetupComplete = async () => {
             store.isSetup = true;
-            location.reload();
+            try {
+                await fetchJars();
+                const res = await api.get('/api/instances/list');
+                if (res.data?.instances) {
+                    store.instanceList = res.data.instances;
+                }
+                if (socket.connected) {
+                    socket.emit('req_history', store.currentInstanceId);
+                    socket.emit('req_players', store.currentInstanceId);
+                }
+            } catch (e) { }
+            store.view = 'dashboard';
         };
 
         const fetchJars = async () => {

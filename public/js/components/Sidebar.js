@@ -39,10 +39,13 @@ const saveSidebarConfig = (instanceId, config) => {
 
 export const getFirstVisibleView = (instanceId) => {
     const config = loadSidebarConfig(instanceId);
+    const inst = (store.instanceList || store.instances || []).find(i => i.id === instanceId);
+    const lt = inst?.loaderType || store.stats?.loaderType || 'fabric';
+    const adaptedBuiltin = BUILTIN_ITEMS.filter(item => !(item.id === 'mods' && lt === 'vanilla'));
     const pluginItems = (store.pluginSidebarItems || [])
         .filter(i => i.location === 'instance' || i.location === 'both')
         .map(i => ({ id: i.id, view: i.view }));
-    const allItems = [...BUILTIN_ITEMS, ...pluginItems];
+    const allItems = [...adaptedBuiltin, ...pluginItems];
     let ordered;
     if (config.order && config.order.length > 0) {
         const itemMap = {};
@@ -232,10 +235,27 @@ export default {
         };
 
         const allItems = computed(() => {
+            const currentInst = (store.instanceList || store.instances || []).find(i => i.id === store.currentInstanceId);
+            const lt = currentInst?.loaderType || store.stats?.loaderType || 'fabric';
+
+            const adaptedBuiltin = BUILTIN_ITEMS.map(item => {
+                if (item.id === 'mods') {
+                    if (lt === 'paper' || lt === 'purpur' || lt === 'spigot') {
+                        return { ...item, icon: 'fa-puzzle-piece', labelKey: 'sidebar.plugins' };
+                    }
+                }
+                return item;
+            }).filter(item => {
+                if (item.id === 'mods' && lt === 'vanilla') {
+                    return false;
+                }
+                return true;
+            });
+
             const pluginItems = store.pluginSidebarItems
                 .filter(i => i.location === 'instance' || i.location === 'both')
                 .map(i => ({ id: i.id, view: i.view, icon: i.icon, labelKey: i.labelKey, color: i.color, isPlugin: true }));
-            return [...BUILTIN_ITEMS, ...pluginItems];
+            return [...adaptedBuiltin, ...pluginItems];
         });
 
         const syncConfigFromStorage = () => {

@@ -398,7 +398,14 @@ const app = createApp({
                 if (d.hasBackupMod !== undefined) { store.hasBackupMod = d.hasBackupMod; store.stats.hasBackupMod = d.hasBackupMod; }
                 if (d.hasEasyAuth !== undefined) { store.hasEasyAuth = d.hasEasyAuth; store.stats.hasEasyAuth = d.hasEasyAuth; }
                 if (d.hasVoicechat !== undefined) { store.hasVoicechat = d.hasVoicechat; store.stats.hasVoicechat = d.hasVoicechat; }
-                if (d.isSetup !== undefined) store.isSetup = d.isSetup;
+                if (d.isSetup !== undefined && !store.isInstallingCore) {
+                    const isTargetInst = !d.activeInstanceId || !store.currentInstanceId || d.activeInstanceId === store.currentInstanceId;
+                    if (isTargetInst) {
+                        if (!store.isSetup || d.isSetup) {
+                            store.isSetup = d.isSetup;
+                        }
+                    }
+                }
             });
 
             // 回档进度监听
@@ -479,6 +486,11 @@ const app = createApp({
                         store.stats.autoBackupEnabled = s.autoBackupEnabled;
                         store.stats.autoBackupInterval = s.autoBackupInterval;
                         store.stats.maxBackupCount = s.maxBackupCount;
+                        if (s.isSetup !== undefined && !store.isInstallingCore) {
+                            if (!store.isSetup || s.isSetup) {
+                                store.isSetup = s.isSetup;
+                            }
+                        }
                     });
                     socket.on(`players_update:${newId}`, p => store.onlinePlayers = p);
                     socket.emit('req_players', newId);
@@ -516,6 +528,11 @@ const app = createApp({
                     if (active) {
                         store.isRunning = active.isRunning;
                         if (active.status) store.serverStatus = active.status;
+                        if (active.isSetup !== undefined && !store.isInstallingCore) {
+                            if (!store.isSetup || active.isSetup) {
+                                store.isSetup = active.isSetup;
+                            }
+                        }
                     }
                 }
             });
@@ -526,6 +543,11 @@ const app = createApp({
                     if (active) {
                         store.isRunning = active.isRunning;
                         if (active.status) store.serverStatus = active.status;
+                        if (active.isSetup !== undefined && !store.isInstallingCore) {
+                            if (!store.isSetup || active.isSetup) {
+                                store.isSetup = active.isSetup;
+                            }
+                        }
                     }
                 }
             });

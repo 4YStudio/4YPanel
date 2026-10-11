@@ -3,6 +3,7 @@ import { reactive } from '/js/vue.esm-browser.js';
 export const store = reactive({
     auth: { loggedIn: false, isSetup: false, initialized: false, qrCode: '', secret: '', token: '', username: '', password: '', captcha: '', isSubAccount: false, permissions: [] },
     isSetup: false, // Added root property for Setup Wizard
+    isInstallingCore: false, // Prevents premature isSetup toggling while installation is in-flight
     lang: 'zh', // 默认语言
     // 在线玩家列表
     onlinePlayers: [],
@@ -22,6 +23,8 @@ export const store = reactive({
     get activeInstanceId() { return this.currentInstanceId; },
     set activeInstanceId(v) { this.currentInstanceId = v; },
     instanceList: [],       // List of all instances
+    get instances() { return this.instanceList; },
+    set instances(v) { this.instanceList = v; },
     javaInstallations: [],  // List of installed Java versions
 
     customLogoUrl: '',      // Custom logo URL from appearance settings

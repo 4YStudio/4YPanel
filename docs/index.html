@@ -106,7 +106,7 @@
             <p class="hero-desc">
                 基于 Node.js 与 Vue 3 构建的现代化 Minecraft 服务端运维中枢。<br>
                 原生支持<strong>官方原版 (Vanilla)</strong>、<strong>现代插件服 (Paper / Purpur / Spigot)</strong> 与 <strong>模组服 (Fabric / Forge / NeoForge)</strong>。<br>
-                流式背压内存控制，低至 512MB VPS 即可轻量起步；独创<strong>零客户端模组</strong>的卷轴脚本引擎，赋予开服无限自由。
+                极致轻量底噪，闲置常驻内存仅约 <strong>70MB</strong>（峰值不超过 100MB，即使 512MB 微型 VPS 亦能顺畅起步）；独创<strong>零客户端模组</strong>的卷轴脚本引擎，赋予开服无限自由。
             </p>
             <div class="hero-actions">
                 <a href="#quickstart" class="btn btn-primary">
@@ -126,8 +126,8 @@
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
-                    <span class="stat-value">低至 512MB</span>
-                    <span class="stat-label">背压流控 · 单进程模式</span>
+                    <span class="stat-value">&lt; 100MB</span>
+                    <span class="stat-label">闲置仅约 70MB · 极致轻量</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
@@ -292,7 +292,7 @@
                         <i class="fa-solid fa-microchip"></i>
                     </div>
                     <h3>极致内存压减与背压流控</h3>
-                    <p>Sharp 原生 C++ 缓存压减 90%，切片合并全程受 Backpressure 背压控制，大文件合并内存锁死在 &lt;10MB，杜绝 OOM；支持 <code>--no-cluster</code> 单进程超低配模式。</p>
+                    <p>面板闲置常驻内存仅约 70MB（峰值稳定 &lt; 100MB）；Sharp 原生 C++ 缓存压减 90%，切片合并全程受 Backpressure 背压控制，大文件合并内存锁死在 &lt;10MB，杜绝 OOM；支持 <code>--no-cluster</code> 单进程超低配模式。</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon" style="--accent: #4d8ef7;">

@@ -1509,6 +1509,28 @@ if (!isSingleProcess && cluster.isPrimary) {
 
     let scrollEngine = null;
 
+    // 终端控制字符、ANSI 转义序列及 Minecraft/货币颜色字符清理
+    const stripAnsiAndColors = (str) => {
+        if (!str || typeof str !== 'string') return '';
+        return str
+            // 匹配 ANSI 转义序列 (包括 \x1b, \u001b, 以及被环境误转成的 ¤ 或 § 前缀)
+            .replace(/(?:\x1b|\u001b|\u00a4|\u00a7)\[[0-9;]*[a-zA-Z]/g, '')
+            // 匹配 Minecraft 原生颜色代码 §0-§f, §r 以及 ¤0-¤f, ¤r
+            .replace(/(?:§|¤|\u00a7|\u00a4)[0-9a-fk-orA-FK-OR]/gi, '')
+            // 去除其余非换行制表符的不可见控制字符
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+    };
+
+    // 纯净 Minecraft 玩家名称提取与安全过滤
+    const sanitizePlayerName = (name) => {
+        if (!name || typeof name !== 'string') return '';
+        let clean = stripAnsiAndColors(name).trim();
+        // 剥离可能存在的称号或中括号包裹如 [VIP] Henvei, [管理员] Henvei
+        const match = clean.match(/([a-zA-Z0-9_.*-]+)$/);
+        if (match) clean = match[1];
+        return clean.replace(/^[^\w.*-]+|[^\w.*-]+$/g, '').trim();
+    };
+
     const appendLog = (instanceId, msg) => {
         const state = getOrCreateInstanceState(instanceId);
         state.logHistory.push(msg);
@@ -3457,7 +3479,7 @@ threaded_server_support=false
     // --- 4. Forge & NeoForge ---
     const fetchForgeVersions = async (gameVersion) => {
         const resp = await axios.get('https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json', { timeout: 15000 });
-        const promos = resp.data.promos;
+        const promos = resp.data?.promos || {};
         const versions = [];
         for (const [key, val] of Object.entries(promos)) {
             if (key.startsWith(gameVersion)) {
@@ -3469,15 +3491,16 @@ threaded_server_support=false
 
     const fetchNeoForgeVersions = async (gameVersion) => {
         const resp = await axios.get('https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge', { timeout: 15000 });
-        const allVersions = resp.data.versions || [];
+        const allVersions = resp.data?.versions || [];
         const prefix = gameVersion.replace(/^1\./, '') + '.';
         return allVersions.filter(v => v.startsWith(prefix) && !v.includes('-beta'));
     };
 
     const fetchForgeMcVersions = async () => {
         const resp = await axios.get('https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json', { timeout: 15000 });
+        const promos = resp.data?.promos || {};
         const mcVersions = new Set();
-        for (const key of Object.keys(resp.data.promos)) {
+        for (const key of Object.keys(promos)) {
             const mc = key.split('-')[0];
             if (mc) mcVersions.add(mc);
         }
@@ -5619,7 +5642,7 @@ threaded_server_support=false
     // Player Inventory API
     app.get('/api/server/player-inventory/:name', requirePermission('instance.players'), withInstance, async (req, res) => {
         try {
-            const playerName = req.params.name;
+            const playerName = sanitizePlayerName(req.params.name);
             const instDir = req.instDir;
 
             // Get level-name from server.properties
@@ -5630,36 +5653,58 @@ threaded_server_support=false
                     const propContent = fs.readFileSync(propPath, 'utf8');
                     for (const line of propContent.split('\n')) {
                         if (line.trim().startsWith('level-name=')) {
-                            levelName = line.split('=')[1].trim();
+                            levelName = (line.split('=')[1] || '').trim() || 'world';
                             break;
                         }
                     }
                 } catch (e) {}
             }
 
-            // Get UUID from usercache.json
+            // Get UUID from usercache.json or direct UUID string
             let uuid = null;
-            const userCachePath = path.join(instDir, 'usercache.json');
-            if (fs.existsSync(userCachePath)) {
-                try {
-                    const userCache = fs.readJsonSync(userCachePath);
-                    const entry = userCache.find(u => u.name === playerName);
-                    if (entry) uuid = entry.uuid;
-                } catch (e) {}
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(playerName) || /^[0-9a-f]{32}$/i.test(playerName);
+            if (isUuid) {
+                uuid = playerName;
+            } else {
+                const userCachePath = path.join(instDir, 'usercache.json');
+                if (fs.existsSync(userCachePath)) {
+                    try {
+                        const userCache = fs.readJsonSync(userCachePath);
+                        if (Array.isArray(userCache)) {
+                            const entry = userCache.find(u => u && sanitizePlayerName(u.name).toLowerCase() === playerName.toLowerCase());
+                            if (entry) uuid = entry.uuid;
+                        }
+                    } catch (e) {}
+                }
             }
 
             if (!uuid) {
                 return res.status(404).json({ error: 'Player not found in usercache' });
             }
 
-            // Read player .dat file
-            const playerDataPath = path.join(instDir, levelName, 'playerdata', `${uuid}.dat`);
-            if (!fs.existsSync(playerDataPath)) {
+            // Read player .dat file (支持 Vanilla, Bukkit, Paper 及 26.2+ 新版深层存储目录)
+            const candidatePaths = [
+                path.join(instDir, levelName, 'playerdata', `${uuid}.dat`),
+                path.join(instDir, levelName, 'players', 'data', `${uuid}.dat`),
+                path.join(instDir, 'world', 'playerdata', `${uuid}.dat`),
+                path.join(instDir, 'world', 'players', 'data', `${uuid}.dat`)
+            ];
+            const playerDataPath = candidatePaths.find(p => fs.existsSync(p));
+            if (!playerDataPath) {
                 return res.status(404).json({ error: 'Player data file not found' });
             }
 
             const compressed = fs.readFileSync(playerDataPath);
-            const decompressed = zlib.gunzipSync(compressed);
+            let decompressed;
+            try {
+                decompressed = zlib.gunzipSync(compressed);
+            } catch (e) {
+                try {
+                    decompressed = zlib.inflateSync(compressed);
+                } catch (_) {
+                    decompressed = compressed;
+                }
+            }
             const inventory = parsePlayerInventory(decompressed);
 
             if (!inventory) {
@@ -5971,12 +6016,13 @@ threaded_server_support=false
                     }
                 } catch (e) { }
             }
-            if (!fs.existsSync(path.join(instDir, jarName))) {
-                const files = fs.readdirSync(instDir).filter(f => f.endsWith('.jar') && !f.includes('installer'));
-                const forgeLike = files.find(f => f.startsWith('forge-') || f.startsWith('neoforge-'));
-                if (forgeLike) jarName = forgeLike;
-                else if (files.length > 0) jarName = files[0];
-            }
+        }
+
+        if (!fs.existsSync(path.join(instDir, jarName))) {
+            const files = fs.readdirSync(instDir).filter(f => f.endsWith('.jar') && !f.includes('installer'));
+            const coreMatch = files.find(f => f.startsWith('paper-') || f.startsWith('purpur-') || f.startsWith('spigot-') || f.startsWith('forge-') || f.startsWith('neoforge-') || f === 'server.jar');
+            if (coreMatch) jarName = coreMatch;
+            else if (files.length > 0) jarName = files[0];
         }
 
         const javaVer = await checkJavaVersion(javaPath);
@@ -5998,17 +6044,28 @@ threaded_server_support=false
             let spawnCmd, spawnArgs, spawnOpts = { cwd: instDir };
 
             const runSh = path.join(instDir, 'run.sh');
+            const runBat = path.join(instDir, 'run.bat');
             const userJvmArgs = path.join(instDir, 'user_jvm_args.txt');
-            const hasRunScript = (loaderType === 'forge' || loaderType === 'neoforge') && fs.existsSync(runSh);
+            const isWindows = process.platform === 'win32';
+            const hasRunScript = (loaderType === 'forge' || loaderType === 'neoforge') && (isWindows ? (fs.existsSync(runBat) || fs.existsSync(runSh)) : fs.existsSync(runSh));
 
             if (hasRunScript) {
                 const jvmArgsContent = javaArgs.map(a => a.trim()).filter(a => a).join('\n') + '\n';
                 await fs.writeFile(userJvmArgs, jvmArgsContent);
-                appendLog(instanceId, `[系统] 加载器: ${loaderType === 'neoforge' ? 'NeoForge' : 'Forge'} (run.sh 模式)\n`);
+                const scriptName = (isWindows && fs.existsSync(runBat)) ? 'run.bat' : 'run.sh';
+                appendLog(instanceId, `[系统] 加载器: ${loaderType === 'neoforge' ? 'NeoForge' : 'Forge'} (${scriptName} 模式)\n`);
                 appendLog(instanceId, `[系统] JVM 参数已写入 user_jvm_args.txt\n`);
-                spawnCmd = '/bin/bash';
-                spawnArgs = [runSh, 'nogui'];
-                try { await fs.chmod(runSh, 0o755); } catch (e) { }
+                if (isWindows && scriptName === 'run.bat') {
+                    spawnCmd = 'cmd.exe';
+                    spawnArgs = ['/c', 'run.bat', 'nogui'];
+                } else if (isWindows) {
+                    spawnCmd = 'bash';
+                    spawnArgs = [runSh, 'nogui'];
+                } else {
+                    spawnCmd = '/bin/bash';
+                    spawnArgs = [runSh, 'nogui'];
+                    try { await fs.chmod(runSh, 0o755); } catch (e) { }
+                }
             } else {
                 appendLog(instanceId, `[系统] 加载器: ${loaderType === 'neoforge' ? 'NeoForge' : loaderType.charAt(0).toUpperCase() + loaderType.slice(1)} (jar 模式)\n`);
                 spawnCmd = javaPath;
@@ -6044,10 +6101,11 @@ threaded_server_support=false
                     if (!rawLine.trim()) continue;
 
                     // Strip log prefix (e.g. "[13:27:31] [Server thread/INFO]: ") and optional "[Not Secure] "
-                    const cleanMsg = rawLine
+                    const rawClean = rawLine
                         .replace(/^(?:\[\d{2}:\d{2}:\d{2}\]\s*)?(?:\[(?:Server thread|Async Chat Thread|INFO|minecraft\/MinecraftServer|[^\]]+)\]\s*)*:\s*/i, '')
                         .replace(/^\[Not Secure\]\s*/i, '')
                         .trim();
+                    const cleanMsg = stripAnsiAndColors(rawClean).trim();
 
                     // 1. /list 指令响应解析（校准在线玩家）
                     // 兼容: "There are 1 of a max of 20 players online: Henvei", "There are 1/20 players online: Henvei", "共有 1 个在线玩家: Henvei"
@@ -6055,7 +6113,7 @@ threaded_server_support=false
                     if (listMatch) {
                         const count = parseInt(listMatch[1], 10);
                         const rawNames = listMatch[2].trim();
-                        const names = rawNames ? rawNames.split(',').map(n => n.trim().replace(/^\[.*?\]\s*/, '')).filter(Boolean) : [];
+                        const names = rawNames ? rawNames.split(',').map(n => sanitizePlayerName(n)).filter(Boolean) : [];
                         instState.onlinePlayers.clear();
                         for (const name of names) {
                             instState.onlinePlayers.add(name);
@@ -6067,15 +6125,17 @@ threaded_server_support=false
                     // 2. 玩家加入游戏（支持英文、中文、Not Secure、带前缀/特殊符号用户名）
                     const join = cleanMsg.match(/^([a-zA-Z0-9_.* -]+?)\s+(?:joined the game|加入了游戏)/i);
                     if (join) {
-                        const playerName = join[1].trim();
-                        instState.onlinePlayers.add(playerName);
-                        io.emit(`players_update:${instanceId}`, Array.from(instState.onlinePlayers));
-                        triggerWebhook('player_change', { instanceId, type: 'join', player: playerName, onlinePlayers: Array.from(instState.onlinePlayers) });
-                        if (pluginLoader && pluginLoader.emitLifecycleEvent) {
-                            pluginLoader.emitLifecycleEvent('playerJoin', { instanceId, player: playerName, onlinePlayers: Array.from(instState.onlinePlayers) });
-                        }
-                        if (scrollEngine) {
-                            scrollEngine.handlePlayerJoin(instanceId, playerName);
+                        const playerName = sanitizePlayerName(join[1]);
+                        if (playerName) {
+                            instState.onlinePlayers.add(playerName);
+                            io.emit(`players_update:${instanceId}`, Array.from(instState.onlinePlayers));
+                            triggerWebhook('player_change', { instanceId, type: 'join', player: playerName, onlinePlayers: Array.from(instState.onlinePlayers) });
+                            if (pluginLoader && pluginLoader.emitLifecycleEvent) {
+                                pluginLoader.emitLifecycleEvent('playerJoin', { instanceId, player: playerName, onlinePlayers: Array.from(instState.onlinePlayers) });
+                            }
+                            if (scrollEngine) {
+                                scrollEngine.handlePlayerJoin(instanceId, playerName);
+                            }
                         }
                         continue;
                     }
@@ -6083,15 +6143,17 @@ threaded_server_support=false
                     // 3. 玩家离开游戏或掉线（支持 left the game, 离开了游戏, lost connection: Disconnected）
                     const leave = cleanMsg.match(/^([a-zA-Z0-9_.* -]+?)\s+(?:left the game|离开了游戏|lost connection)/i);
                     if (leave) {
-                        const playerName = leave[1].trim();
-                        instState.onlinePlayers.delete(playerName);
-                        io.emit(`players_update:${instanceId}`, Array.from(instState.onlinePlayers));
-                        triggerWebhook('player_change', { instanceId, type: 'leave', player: playerName, onlinePlayers: Array.from(instState.onlinePlayers) });
-                        if (pluginLoader && pluginLoader.emitLifecycleEvent) {
-                            pluginLoader.emitLifecycleEvent('playerQuit', { instanceId, player: playerName, onlinePlayers: Array.from(instState.onlinePlayers) });
-                        }
-                        if (scrollEngine) {
-                            scrollEngine.handlePlayerQuit(instanceId, playerName);
+                        const playerName = sanitizePlayerName(leave[1]);
+                        if (playerName) {
+                            instState.onlinePlayers.delete(playerName);
+                            io.emit(`players_update:${instanceId}`, Array.from(instState.onlinePlayers));
+                            triggerWebhook('player_change', { instanceId, type: 'leave', player: playerName, onlinePlayers: Array.from(instState.onlinePlayers) });
+                            if (pluginLoader && pluginLoader.emitLifecycleEvent) {
+                                pluginLoader.emitLifecycleEvent('playerQuit', { instanceId, player: playerName, onlinePlayers: Array.from(instState.onlinePlayers) });
+                            }
+                            if (scrollEngine) {
+                                scrollEngine.handlePlayerQuit(instanceId, playerName);
+                            }
                         }
                         continue;
                     }
@@ -6324,8 +6386,12 @@ threaded_server_support=false
     });
     app.post('/api/server/command', requirePermission('instance.control'), withInstance, (req, res) => {
         if (req.instState.process) {
-            req.instState.process.stdin.write(req.body.command + '\n');
-            appendLog(req.instanceId, `> ${req.body.command}\n`);
+            let cmd = (req.body.command || '').trim();
+            if (cmd.startsWith('/')) cmd = cmd.substring(1).trim();
+            if (cmd) {
+                req.instState.process.stdin.write(cmd + '\n');
+                appendLog(req.instanceId, `> ${cmd}\n`);
+            }
         }
         res.json({ success: true });
     });
@@ -6636,7 +6702,9 @@ threaded_server_support=false
 
     app.post('/api/files/mkdir', requirePermission('instance.files'), withInstance, async (req, res) => {
         const { instDir } = req;
-        const targetPath = path.join(instDir, req.body.path);
+        const subPath = req.body?.path;
+        if (!subPath || typeof subPath !== 'string') return res.status(400).json({ error: 'Path is required' });
+        const targetPath = path.join(instDir, subPath);
         if (!isPathInside(targetPath, instDir)) return res.status(403).json({ error: 'Denied' });
         try { await fs.ensureDir(targetPath); res.json({ success: true }); }
         catch (e) { res.status(500).json({ error: e.message }); }
@@ -6644,7 +6712,9 @@ threaded_server_support=false
 
     app.post('/api/files/create', requirePermission('instance.files'), withInstance, async (req, res) => {
         const { instDir } = req;
-        const targetPath = path.join(instDir, req.body.path);
+        const subPath = req.body?.path;
+        if (!subPath || typeof subPath !== 'string') return res.status(400).json({ error: 'Path is required' });
+        const targetPath = path.join(instDir, subPath);
         if (!isPathInside(targetPath, instDir)) return res.status(403).json({ error: 'Denied' });
         try {
             if (await fs.pathExists(targetPath)) return res.status(400).json({ error: 'File exists' });
@@ -6656,14 +6726,18 @@ threaded_server_support=false
 
     app.get('/api/files/download', requirePermission('instance.files'), withInstance, async (req, res) => {
         const { instDir } = req;
-        const filePath = path.join(instDir, req.query.path);
+        const subPath = req.query?.path;
+        if (!subPath || typeof subPath !== 'string') return res.status(400).send('Path is required');
+        const filePath = path.join(instDir, subPath);
         if (!isPathInside(filePath, instDir)) return res.status(403).send('Denied');
         if (fs.existsSync(filePath)) res.download(filePath); else res.status(404).send('Not Found');
     });
     app.get('/api/files/content', requirePermission('instance.files'), withInstance, async (req, res) => {
         const { instDir } = req;
         try {
-            const filepath = path.join(instDir, req.query.path);
+            const subPath = req.query?.path;
+            if (!subPath || typeof subPath !== 'string') return res.status(400).json({ error: 'Path is required' });
+            const filepath = path.join(instDir, subPath);
             if (!isPathInside(filepath, instDir)) return res.status(403).send('Denied');
             if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'File not found' });
             res.json({ content: await fs.readFile(filepath, 'utf8') });
@@ -6673,7 +6747,9 @@ threaded_server_support=false
     app.get('/api/files/archive-list', requirePermission('instance.files'), withInstance, async (req, res) => {
         const { instDir } = req;
         try {
-            const filepath = path.join(instDir, req.query.path);
+            const subPath = req.query?.path;
+            if (!subPath || typeof subPath !== 'string') return res.status(400).json({ error: 'Path is required' });
+            const filepath = path.join(instDir, subPath);
             if (!isPathInside(filepath, instDir)) return res.status(403).send('Denied');
             if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'File not found' });
             const zip = new AdmZip(filepath);
@@ -6706,7 +6782,9 @@ threaded_server_support=false
     app.get('/api/files/preview-image', requirePermission('instance.files'), withInstance, async (req, res) => {
         const { instDir } = req;
         try {
-            const filepath = path.join(instDir, req.query.path);
+            const subPath = req.query?.path;
+            if (!subPath || typeof subPath !== 'string') return res.status(400).send('Path is required');
+            const filepath = path.join(instDir, subPath);
             if (!isPathInside(filepath, instDir)) return res.status(403).send('Denied');
             if (!fs.existsSync(filepath)) return res.status(404).json({ error: 'File not found' });
             const ext = path.extname(filepath).toLowerCase();
@@ -6724,9 +6802,11 @@ threaded_server_support=false
     app.post('/api/files/save', requirePermission('instance.files'), withInstance, async (req, res) => {
         const { instDir } = req;
         try {
-            const filepath = path.join(instDir, req.body.filepath);
+            const subPath = req.body?.filepath;
+            if (!subPath || typeof subPath !== 'string') return res.status(400).json({ error: 'Filepath is required' });
+            const filepath = path.join(instDir, subPath);
             if (!isPathInside(filepath, instDir)) return res.status(403).send('Denied');
-            await fs.writeFile(filepath, req.body.content);
+            await fs.writeFile(filepath, req.body.content || '');
             res.json({ success: true });
         } catch (e) { res.status(500).send('Err'); }
     });

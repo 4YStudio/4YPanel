@@ -1,7 +1,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance, nextTick } from '/js/vue.esm-browser.js';
 import { api } from '../api.js';
 import { store } from '../store.js';
-import { showToast, openModal } from '../utils.js';
+import { showToast, openModal, sanitizePlayerName } from '../utils.js';
 import Avatar from './Avatar.js';
 
 const LEGACY_ITEMS = {
@@ -838,8 +838,9 @@ export default {
 
         const filteredOnline = computed(() => {
             const f = onlineFilter.value.toLowerCase().trim();
-            if (!f) return store.onlinePlayers;
-            return store.onlinePlayers.filter(p => p.toLowerCase().includes(f));
+            const list = (store.onlinePlayers || []).map(p => sanitizePlayerName(p)).filter(Boolean);
+            if (!f) return list;
+            return list.filter(p => p.toLowerCase().includes(f));
         });
 
         const filteredList = computed(() => {

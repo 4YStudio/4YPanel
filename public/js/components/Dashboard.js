@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { showToast, formatLog, t, openModal } from '../utils.js';
 import { messages } from '../i18n.js';
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from '/js/vue.esm-browser.js';
+import { socket } from '../socket.js';
 import SetupWizard from './SetupWizard.js';
 
 const COMMAND_SCHEMAS = {

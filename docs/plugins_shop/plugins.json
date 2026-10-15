@@ -92,9 +92,9 @@
     {
         "id": "mc-panel-plugin-map",
         "name": "服务器地图",
-        "version": "1.3.0",
+        "version": "1.3.1",
         "author": "4YStudio",
-        "description": "极速高性能服务器交互地图，支持实时玩家雷达、安全地表定位、离线本地渲染与平滑缩放。",
+        "description": "极速高性能服务器交互地图，支持实时玩家雷达、安全地表定位、离线本地渲染与平滑缩放，完美兼容插件服三维度独立文件夹架构（world_nether/world_the_end）与新版嵌套目录。",
         "category": "tools",
         "permissions": [
             "http",
@@ -102,7 +102,7 @@
             "command"
         ],
         "icon": "fa-map-location-dot",
-        "fileSize": 77464,
+        "fileSize": 80691,
         "downloadUrl": "./plugins_shop/mc-panel-plugin-map.zip"
     },
     {

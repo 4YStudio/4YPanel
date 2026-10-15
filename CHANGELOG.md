@@ -1,5 +1,46 @@
 # MC Web Panel 更新日志
 
+## [2.6.1] - 2026-10-15
+
+### 🛠️ 插件服（Paper / Purpur / Spigot）深度兼容性修复与地图插件三维度多文件夹重构
+
+- **日志与玩家名称 ANSI 转义序列 / 货币符号编码污染彻底修复**：
+  - **高保真 ANSI 终端渲染与全链路编码兼容（保留现代彩色特性，不砍功能）**：
+    - **拒绝剥离功能，全面增强解析兼容性**：保留现代 Paper / Purpur / Spigot 服务端原生高保真 ANSI 彩色控制台（JLine3 / Log4j2 原生支持）；
+    - **前端 `formatLog` 全功能 ANSI 解析引擎**：
+      - 完整支持 16 标准色、256 扩展色、24-bit RGB 真彩色模式；
+      - 完整支持粗体（bold）、斜体（italic）、下划线（underline）、删除线（strikethrough）及暗淡等样式；
+      - 自动识别并归一化环境误编码的 `¤[...m` / `§[...m` 为标准 ANSI 格式，无损高保真还原彩色列印；
+      - 严格管理 active span 与安全闭合，消除残余乱码并保留关键标签（`[INFO]`、`[WARN]`、`[ERROR]`、`[系统]`、`[诊断]`）高亮。
+  - **后端管道层纯净玩家名提取与容错清洗**：
+    - 针对 `/list`、`joined the game`、`left the game` 等生命周期提取逻辑，实现 `stripAnsiAndColors` 与 `sanitizePlayerName`；
+    - 从源头上剥离 ANSI、伪转义符及称号中括号，杜绝乱码污染 `onlinePlayers` 集合；
+    - 确保前端与后端的玩家管理操作（OP、踢出、封禁、传送、白名单、卷轴绑定等）下发的指令参数均为 100% 干净合法的玩家名，恢复所有玩家功能。
+  - **控制台前导斜杠 `/` 自动兼容**：
+    - 针对在面板控制台输入带 `/` 的指令（如 `/tp`、`/op`），后端执行时自动剔除前导 `/`，彻底解决 Paper 插件服控制台误报 `Unknown command. Type "/help" for help.` 的问题。
+  - **玩家背包查询深度容错**：
+  - **服务端进程启动调度修复与核心 Jar 自愈探测**：
+    - 修复在启动服务端时由于 `hasRunScript` 变量缺失引起的 `ReferenceError: hasRunScript is not defined` 异常；
+    - 补齐跨平台（Windows / Linux）对 `run.bat` 与 `run.sh` 的正确环境调度；
+    - 提升对 Paper / Purpur / Spigot 等核心 Jar 名称的自愈探测兜底能力，杜绝文件名微小差异导致的启动失败。
+
+- **服务器地图插件（`mc-panel-plugin-map`）v1.3.1：多世界独立三文件夹与新版嵌套目录全面支持**：
+  - **独立三文件夹架构自适应探测**：
+    - 原生兼容 Bukkit / Paper / Spigot 插件服将三个维度拆分成三个独立顶层文件夹的架构：
+      - 主世界（Overworld）：`<levelName>` 或 `world`（支持 `region/` 及 `dimensions/minecraft/overworld/region`）；
+      - 下界（Nether）：支持 `<levelName>_nether`、`world_nether`（包含 `DIM-1/region` 或根 `region/`），以及单目录嵌套 `DIM-1/region`；
+      - 末地（The End）：支持 `<levelName>_the_end`、`<levelName>_end`、`world_the_end`、`world_end`（包含 `DIM1/region` 或根 `region/`），以及单目录嵌套 `DIM1/region`。
+    - 引入动态目录模糊扫描备选机制，任何不规则命名的多世界目录均能自适应命中，彻底解决地图插件在插件服直接报废或无法读取下界/末地的问题。
+  - **玩家数据深层目录兼容**：
+    - 兼容读取 `world/playerdata`、`world/players/data`、`<levelName>/playerdata` 及 `<levelName>/players/data` 等深层路径，确保离线玩家位置与背包数据不丢失。
+  - **玩家所在维度双向归一化**：
+    - 增加 `normalizeDimension` 模块，自动将 Bukkit 插件服输出的裸维度名（如 `world`、`world_nether`、`world_the_end` 或整数 `-1, 0, 1`）统一映射为标准命名空间，确保玩家雷达在各维度无缝追踪与准确呈现。
+  - **多世界插件与自定义维度动态发现与前端异步装载**：
+    - 新增 `/dimensions` 路由，动态枚举实例目录下所有世界（包括 Multiverse-Core 等多世界插件创建的独立世界）并计算已生成区块计数；
+    - 地图前端组件 `MainView.js` 改造为响应式动态维度切换，支持各维度区块徽标展示、专属图标及切片高度自适应；
+  - **插件市场与分发包同步更新**：
+    - 重新编译打包发布 `docs/plugins_shop/mc-panel-plugin-map.zip` 至 `v1.3.1`，并同步更新 `docs/plugins_shop/plugins.json`。
+
 ## [2.6.0] - 2026-10-12
 
 ### 🚀 全架构原生支持：官方原版（Vanilla）与现代插件服（Paper / Purpur / Spigot）深度适配与生态重构

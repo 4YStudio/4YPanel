@@ -38,8 +38,133 @@ export const showToast = (msg, type = 'success', params = {}) => {
     setTimeout(() => removeToast(id), 3000);
 };
 
+// 纯净 Minecraft 玩家名称安全过滤
+export const sanitizePlayerName = (name) => {
+    if (!name || typeof name !== 'string') return '';
+    let clean = name
+        .replace(/(?:\x1b|\u001b|\u00a4|\u00a7)\[[0-9;]*[a-zA-Z]/g, '')
+        .replace(/(?:§|¤|\u00a7|\u00a4)[0-9a-fk-orA-FK-OR]/gi, '')
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+        .trim();
+    const match = clean.match(/([a-zA-Z0-9_.*-]+)$/);
+    if (match) clean = match[1];
+    return clean.replace(/^[^\w.*-]+|[^\w.*-]+$/g, '').trim();
+};
+
 export const formatLog = (log) => {
-    return log.replace(/</g, "&lt;")
+    if (!log) return '';
+    // 1. 转义基础 HTML 实体，避免 XSS
+    let escaped = log.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    // 2. 将变体转义符 (如 ¤[...m 或 §[...m) 统一转为标准 ANSI 格式 \x1b[...m
+    escaped = escaped.replace(/(?:¤|§|\u00a4|\u00a7)\[/g, '\x1b[');
+
+    // 3. 将 Minecraft 原生 § / ¤ 颜色与排版样式转换为等效的 ANSI 序列
+    const mcAnsiMap = {
+        '0': '\x1b[30m', '1': '\x1b[34m', '2': '\x1b[32m', '3': '\x1b[36m',
+        '4': '\x1b[31m', '5': '\x1b[35m', '6': '\x1b[33m', '7': '\x1b[37m',
+        '8': '\x1b[90m', '9': '\x1b[94m', 'a': '\x1b[92m', 'b': '\x1b[96m',
+        'c': '\x1b[91m', 'd': '\x1b[95m', 'e': '\x1b[93m', 'f': '\x1b[97m',
+        'l': '\x1b[1m',  'm': '\x1b[9m',  'n': '\x1b[4m',  'o': '\x1b[3m',
+        'r': '\x1b[0m'
+    };
+    escaped = escaped.replace(/(?:§|¤|\u00a7|\u00a4)([0-9a-fk-orA-FK-OR])/gi, (_, code) => {
+        return mcAnsiMap[code.toLowerCase()] || '';
+    });
+
+    // 16色终端配色表 (针对深色控制台优化的明晰配色)
+    const standardColors = {
+        0: '#1e293b', 1: '#ef4444', 2: '#22c55e', 3: '#eab308',
+        4: '#3b82f6', 5: '#a855f7', 6: '#06b6d4', 7: '#e2e8f0',
+        8: '#64748b', 9: '#f87171', 10: '#4ade80', 11: '#fde047',
+        12: '#60a5fa', 13: '#c084fc', 14: '#22d3ee', 15: '#ffffff'
+    };
+
+    const get256Color = (n) => {
+        if (n < 16) return standardColors[n] || '#e2e8f0';
+        if (n >= 232) {
+            const v = Math.round((n - 232) * 10 + 8);
+            return `rgb(${v},${v},${v})`;
+        }
+        const idx = n - 16;
+        const b = (idx % 6) * 51;
+        const g = (Math.floor(idx / 6) % 6) * 51;
+        const r = (Math.floor(idx / 36) % 6) * 51;
+        return `rgb(${r},${g},${b})`;
+    };
+
+    // 4. 解析全功能 ANSI 序列 (支持16色、256色、RGB真彩色及粗体/斜体/下划线/删除线)
+    let activeSpanCount = 0;
+    escaped = escaped.replace(/\x1b\[([0-9;]*)m/g, (match, paramStr) => {
+        if (!paramStr || paramStr === '0') {
+            const res = '</span>'.repeat(activeSpanCount);
+            activeSpanCount = 0;
+            return res;
+        }
+
+        const args = paramStr.split(';').map(x => parseInt(x, 10) || 0);
+        const styles = [];
+        let closeTags = '';
+
+        for (let i = 0; i < args.length; i++) {
+            const code = args[i];
+            if (code === 0) {
+                closeTags += '</span>'.repeat(activeSpanCount);
+                activeSpanCount = 0;
+            } else if (code === 1) {
+                styles.push('font-weight:bold');
+            } else if (code === 2) {
+                styles.push('opacity:0.75');
+            } else if (code === 3) {
+                styles.push('font-style:italic');
+            } else if (code === 4) {
+                styles.push('text-decoration:underline');
+            } else if (code === 9) {
+                styles.push('text-decoration:line-through');
+            } else if (code >= 30 && code <= 37) {
+                styles.push(`color:${standardColors[code - 30]}`);
+            } else if (code === 39) {
+                styles.push('color:inherit');
+            } else if (code >= 40 && code <= 47) {
+                styles.push(`background-color:${standardColors[code - 40]}`);
+            } else if (code === 49) {
+                styles.push('background-color:transparent');
+            } else if (code >= 90 && code <= 97) {
+                styles.push(`color:${standardColors[code - 90 + 8]}`);
+            } else if (code >= 100 && code <= 107) {
+                styles.push(`background-color:${standardColors[code - 100 + 8]}`);
+            } else if (code === 38 && args[i + 1] === 5 && args[i + 2] !== undefined) {
+                styles.push(`color:${get256Color(args[i + 2])}`);
+                i += 2;
+            } else if (code === 48 && args[i + 1] === 5 && args[i + 2] !== undefined) {
+                styles.push(`background-color:${get256Color(args[i + 2])}`);
+                i += 2;
+            } else if (code === 38 && args[i + 1] === 2 && args[i + 4] !== undefined) {
+                styles.push(`color:rgb(${args[i + 2]},${args[i + 3]},${args[i + 4]})`);
+                i += 4;
+            } else if (code === 48 && args[i + 1] === 2 && args[i + 4] !== undefined) {
+                styles.push(`background-color:rgb(${args[i + 2]},${args[i + 3]},${args[i + 4]})`);
+                i += 4;
+            }
+        }
+
+        if (styles.length > 0) {
+            activeSpanCount++;
+            return closeTags + `<span style="${styles.join(';')}">`;
+        }
+        return closeTags;
+    });
+
+    if (activeSpanCount > 0) {
+        escaped += '</span>'.repeat(activeSpanCount);
+    }
+
+    // 5. 额外清理任何残余未识别的非打印控制序列
+    escaped = escaped.replace(/(?:\x1b|\u001b|\u00a4|\u00a7)\[[0-9;]*[a-zA-Z]/g, '')
+                     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+
+    // 6. 标签高亮
+    return escaped
         .replace(/(\/INFO\])/g, '/<span class="log-info">INFO</span>]')
         .replace(/(\/WARN\])/g, '/<span class="log-warn">WARN</span>]')
         .replace(/(\/ERROR\])/g, '/<span class="log-error">ERROR</span>]')

@@ -86,9 +86,13 @@ export default {
                         {{ $t('login.btn_login') }}
                     </button>
 
-                    <div v-if="store.auth.isSetup" class="text-center">
-                        <button class="btn btn-link text-primary small text-decoration-none fw-semibold" @click="switchMode('2fa')">
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                        <button v-if="store.auth.isSetup" class="btn btn-link text-primary small text-decoration-none fw-semibold p-0" @click="switchMode('2fa')">
                             <i class="fa-solid fa-shield-halved me-1"></i> {{ $t('login.switch_to_2fa') }}
+                        </button>
+                        <span v-else></span>
+                        <button class="btn btn-link text-muted small text-decoration-none p-0" @click="switchMode('forgot')">
+                            <i class="fa-solid fa-circle-question me-1"></i> {{ $t('login.forgot_guide_link') }}
                         </button>
                     </div>
 
@@ -110,9 +114,12 @@ export default {
                         {{ $t('login.btn_verify') }}
                     </button>
                     
-                    <div class="text-center mt-2">
-                        <button class="btn btn-link text-primary small text-decoration-none fw-semibold" @click="switchMode('password')">
+                    <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                        <button class="btn btn-link text-primary small text-decoration-none fw-semibold p-0" @click="switchMode('password')">
                             <i class="fa-solid fa-key me-1"></i> {{ $t('login.switch_to_password') }}
+                        </button>
+                        <button class="btn btn-link text-muted small text-decoration-none p-0" @click="switchMode('forgot')">
+                            <i class="fa-solid fa-circle-question me-1"></i> {{ $t('login.forgot_guide_link') }}
                         </button>
                     </div>
 
@@ -169,6 +176,88 @@ export default {
 
                     <div class="text-center mt-3">
                         <button class="btn btn-link text-secondary small text-decoration-none" @click="switchMode('password')" :disabled="restoring">
+                            <i class="fa-solid fa-arrow-left me-1"></i> {{ $t('login.recovery_btn_cancel') }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 模式四: 忘记密码 / 丢失 2FA 重置指引 -->
+                <div v-else-if="loginMode === 'forgot'" class="animate-in text-start">
+                    <div class="text-center mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-2" style="width: 46px; height: 46px;">
+                            <i class="fa-solid fa-terminal fa-lg"></i>
+                        </div>
+                        <h5 class="fw-bold tracking-tight mb-1 text-primary">{{ $t('login.forgot_modal_title') }}</h5>
+                    </div>
+
+                    <div class="alert alert-info py-2 px-2.5 mb-3 d-flex align-items-start" style="font-size: 0.78rem; line-height: 1.45;">
+                        <i class="fa-solid fa-shield-halved mt-0.5 me-2 flex-shrink-0 text-info"></i>
+                        <div>{{ $t('login.forgot_security_notice') }}</div>
+                    </div>
+
+                    <!-- 1. 重置密码部分 -->
+                    <div class="mb-3">
+                        <div class="small fw-bold text-body-secondary mb-1">
+                            <i class="fa-solid fa-key me-1 text-warning"></i> {{ $t('login.forgot_cmd_pwd_title') }}
+                        </div>
+                        <div class="text-muted small mb-1.5" style="font-size: 0.75rem;">
+                            {{ $t('login.forgot_cmd_pwd_random') }}
+                        </div>
+                        <div class="position-relative mb-2">
+                            <div class="p-2 rounded bg-dark-subtle font-monospace text-break user-select-all pe-5" style="font-size: 0.78rem; border: 1px solid var(--c-border);">
+                                ./4ypanel reset-password
+                            </div>
+                            <button class="btn btn-sm btn-link text-primary position-absolute top-50 end-0 translate-middle-y me-1 p-1 text-decoration-none" @click="copyCommand('./4ypanel reset-password')" :title="$t('login.forgot_copy_btn')">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+
+                        <div class="text-muted small mb-1.5" style="font-size: 0.75rem;">
+                            {{ $t('login.forgot_cmd_pwd_custom') }}
+                        </div>
+                        <div class="position-relative mb-2">
+                            <div class="p-2 rounded bg-dark-subtle font-monospace text-break user-select-all pe-5" style="font-size: 0.78rem; border: 1px solid var(--c-border);">
+                                ./4ypanel reset-password [用户名] [新密码]
+                            </div>
+                            <button class="btn btn-sm btn-link text-primary position-absolute top-50 end-0 translate-middle-y me-1 p-1 text-decoration-none" @click="copyCommand('./4ypanel reset-password admin 12345678')" :title="$t('login.forgot_copy_btn')">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. 重置或关闭 2FA 部分 -->
+                    <div class="mb-3 pt-2 border-top border-secondary-subtle">
+                        <div class="small fw-bold text-body-secondary mb-1">
+                            <i class="fa-solid fa-mobile-screen-button me-1 text-success"></i> {{ $t('login.forgot_cmd_2fa_title') }}
+                        </div>
+                        
+                        <div class="text-muted small mb-1.5" style="font-size: 0.75rem;">
+                            {{ $t('login.forgot_cmd_2fa_disable') }}
+                        </div>
+                        <div class="position-relative mb-2">
+                            <div class="p-2 rounded bg-dark-subtle font-monospace text-break user-select-all pe-5" style="font-size: 0.78rem; border: 1px solid var(--c-border);">
+                                ./4ypanel disable-2fa
+                            </div>
+                            <button class="btn btn-sm btn-link text-primary position-absolute top-50 end-0 translate-middle-y me-1 p-1 text-decoration-none" @click="copyCommand('./4ypanel disable-2fa')" :title="$t('login.forgot_copy_btn')">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+
+                        <div class="text-muted small mb-1.5" style="font-size: 0.75rem;">
+                            {{ $t('login.forgot_cmd_2fa_reset') }}
+                        </div>
+                        <div class="position-relative mb-2">
+                            <div class="p-2 rounded bg-dark-subtle font-monospace text-break user-select-all pe-5" style="font-size: 0.78rem; border: 1px solid var(--c-border);">
+                                ./4ypanel reset-2fa
+                            </div>
+                            <button class="btn btn-sm btn-link text-primary position-absolute top-50 end-0 translate-middle-y me-1 p-1 text-decoration-none" @click="copyCommand('./4ypanel reset-2fa')" :title="$t('login.forgot_copy_btn')">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3 pt-2">
+                        <button class="btn btn-outline-secondary w-100 py-2 small fw-semibold" @click="switchMode('password')">
                             <i class="fa-solid fa-arrow-left me-1"></i> {{ $t('login.recovery_btn_cancel') }}
                         </button>
                     </div>
@@ -245,9 +334,29 @@ export default {
             }
         });
 
+        const copyCommand = async (cmd) => {
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(cmd);
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = cmd;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                }
+                showToast('login.forgot_copied', 'success');
+            } catch (e) {
+                showToast(cmd, 'info');
+            }
+        };
+
         const switchMode = (mode) => {
             loginMode.value = mode;
-            if (mode !== 'recovery') {
+            if (mode !== 'recovery' && mode !== 'forgot') {
                 localStorage.setItem('preferred_login_mode', mode);
             }
             if (mode === 'password') {
@@ -439,7 +548,8 @@ export default {
             recoveryPass, recoveryFile, formatFileSize,
             switchMode, setupAdmin, loginPassword, login2FA,
             toggleTheme, toggleLang, triggerRestore, triggerRecoveryFile,
-            handleRecoveryFileSelect, handleSetupRestore, startDisasterRecovery
+            handleRecoveryFileSelect, handleSetupRestore, startDisasterRecovery,
+            copyCommand
         };
     }
 };

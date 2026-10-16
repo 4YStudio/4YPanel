@@ -115,7 +115,7 @@ async function buildTarget(target) {
     }
 
     const pkg = require('./package.json');
-    const outputName = `MWP-${pkg.version.replace(/\./g, '')}-${target.name}${target.ext}`;
+    const outputName = `4YPanel-${pkg.version.replace(/\./g, '')}-${target.name}${target.ext}`;
     const outputPath = path.join(OUTPUT_DIR, outputName);
     console.log(`Packaging to ${outputName}...`);
 

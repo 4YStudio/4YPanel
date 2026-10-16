@@ -1,14 +1,17 @@
 <div align="center">
 
-# 🎮 MC Web Panel
+# 🎮 4YPanel
 
-[![GitHub stars](https://img.shields.io/github/stars/4YStudio/mc-web-panel?style=social)](https://github.com/4YStudio/mc-web-panel/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/4YStudio/mc-web-panel?style=social)](https://github.com/4YStudio/mc-web-panel/network/members)
-[![GitHub license](https://img.shields.io/github/license/4YStudio/mc-web-panel)](https://github.com/4YStudio/mc-web-panel/blob/main/LICENSE)
-[![GitHub release](https://img.shields.io/github/v/release/4YStudio/mc-web-panel)](https://github.com/4YStudio/mc-web-panel/releases)
-[![GitHub issues](https://img.shields.io/github/issues/4YStudio/mc-web-panel)](https://github.com/4YStudio/mc-web-panel/issues)
+**（原 MC Web Panel / Formerly MC Web Panel）**
 
-一个轻量级、现代化且高性能的 Minecraft 服务器管理面板
+[![GitHub stars](https://img.shields.io/github/stars/4YStudio/4YPanel?style=social)](https://github.com/4YStudio/4YPanel/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/4YStudio/4YPanel?style=social)](https://github.com/4YStudio/4YPanel/network/members)
+[![GitHub license](https://img.shields.io/github/license/4YStudio/4YPanel)](https://github.com/4YStudio/4YPanel/blob/main/LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/4YStudio/4YPanel)](https://github.com/4YStudio/4YPanel/releases)
+[![GitHub issues](https://img.shields.io/github/issues/4YStudio/4YPanel)](https://github.com/4YStudio/4YPanel/issues)
+
+一个轻量级、现代化且高性能的 Minecraft 服务器管理面板  
+A lightweight, modern, and high-performance Minecraft server web management panel
 
 [English](#english) | [中文](#chinese)
 
@@ -21,9 +24,12 @@
 
 ### ✨ 项目简介
 
-MC Web Panel 是一个基于 **Node.js** 和 **Vue 3** 构建的现代化 Minecraft 服务器管理面板。它提供了美观的 Web 界面，原生全架构支持各类主流 Minecraft 服务端——无论是**官方原版 (Vanilla)**、**现代插件服 (Paper / Purpur / Spigot)**，还是**主流模组服 (Fabric / Forge / NeoForge)**，都能轻松搞定实例生命周期、扩展生态、玩家管理、文件运维与自动化脚本。
+> [!NOTE]
+> **更名通知**：本项目已正式更名为 **4YPanel**（曾用名 **MC Web Panel** / `mc-web-panel`）。
 
-无论是个人服务器还是小型社区，MC Web Panel 都能为您提供专业的管理体验！
+**4YPanel** 是一个基于 **Node.js** 和 **Vue 3** 构建的现代化、极致轻量且高性能的 Minecraft 服务器管理面板。它提供了美观的 Web 界面，原生全架构支持各类主流 Minecraft 服务端——无论是**官方原版 (Vanilla)**、**现代插件服 (Paper / Purpur / Spigot)**，还是**主流模组服 (Fabric / Forge / NeoForge)**，都能轻松搞定实例生命周期、扩展生态、玩家管理、文件运维与自动化脚本。
+
+无论是个人服务器还是小型社区，**4YPanel** 都能为您提供专业的管理体验！
 
 ### 📸 截图展示
 
@@ -52,13 +58,13 @@ MC Web Panel 是一个基于 **Node.js** 和 **Vue 3** 构建的现代化 Minecr
 | 🐧 **系统支持** | 官方开箱仅支持 **Linux** (x64 / ARM64)；如需在其他系统（如 Windows / macOS）使用，需克隆仓库稍作适配后自行打包 |
 | 🔌 **插件扩展体系** | 模块化架构，支持开发者轻松扩展后端逻辑与前端 UI |
 
-### 🎯 为什么选择 MC Web Panel？
+### 🎯 为什么选择 4YPanel？
 
 1. **全架构通用** - 原版、插件、模组三大主流生态全部开箱即用
-2. **轻量高效** - 占用资源少，启动速度快，极简依赖
-3. **简单易用** - 直观的自适应界面设计，新手服主也能轻松上手
-4. **功能全面** - 涵盖扩展管理、文件运维、玩家控制与自动化脚本
-5. **持续更新** - 活跃的开发社区，功能不断迭代
+2. **极致轻量高效** - 闲置物理内存占用仅 ~70MB，启动神速，极简无冗余依赖，低配 VPS 绝佳之选
+3. **简单易用** - 直观自适应的玻璃拟态界面设计，移动端/桌面端流畅自如，新手服主也能轻松上手
+4. **功能全面** - 涵盖扩展管理、多维度地图展示、文件运维、玩家控制与控制台免侵入自动化脚本
+5. **持续更新** - 活跃的开发社区与全生命周期自愈机制，功能不断迭代
 6. **开源免费** - 完全开源，自由使用和修改
 
 ### 📜 卷轴系统 (Scroll Automation)
@@ -88,12 +94,12 @@ MC Web Panel 是一个基于 **Node.js** 和 **Vue 3** 构建的现代化 Minecr
 
 #### 方式一：使用预编译可执行文件（推荐，Linux）
 
-1. 从 [Releases](https://github.com/4YStudio/mc-web-panel/releases) 页面下载适用于您 Linux 架构的可执行文件（如 `mc-web-panel-linux-x64` 或 `mc-web-panel-linux-arm64`）
+1. 从 [Releases](https://github.com/4YStudio/4YPanel/releases) 页面下载适用于您 Linux 架构的可执行文件（如 `4ypanel-linux-x64` 或 `4ypanel-linux-arm64`）
 2. 将其放置在一个空目录中（推荐）
 3. 赋予执行权限并启动：
    ```bash
-   chmod +x mc-web-panel-linux-x64
-   ./mc-web-panel-linux-x64 start
+   chmod +x 4ypanel-linux-x64
+   ./4ypanel-linux-x64 start
    ```
 4. 打开浏览器访问 `http://localhost:3000`
 5. 跟随设置向导安装新的 Minecraft 服务器，或指定现有的服务端 JAR 文件
@@ -104,8 +110,8 @@ MC Web Panel 是一个基于 **Node.js** 和 **Vue 3** 构建的现代化 Minecr
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/4YStudio/mc-web-panel.git
-cd mc-web-panel
+git clone https://github.com/4YStudio/4YPanel.git
+cd 4YPanel
 
 # 2. 安装依赖 (需要 Node.js 18+)
 npm install
@@ -124,22 +130,27 @@ npm run build
 | 命令 | 说明 |
 |---|---|
 | `start` | 启动面板（后台运行，默认行为） |
-| `stop` | 停止面板 |
-| `restart` | 重启面板 |
+| `stop` | 停止面板（支持 `--force` 强制停止） |
+| `restart` | 重启面板（支持 `--force` 强制重启） |
 | `host <地址> [端口]` | 修改面板监听地址及端口（如 `host 0.0.0.0 3000` 或 `host 8080`） |
 | `port <端口>` | 修改面板端口（如 `port 8080`） |
-| `reset` | 重置 2FA 密钥并打印新密钥 |
-| `help` | 显示帮助信息 |
+| `reset-password [用户] [密码]` | 重置主管理员或子账号密码（留空密码自动生成随机高强度密码） |
+| `reset-2fa` (或 `reset`) | 重置并生成新的 2FA (两步验证) 密钥与二维码 URI |
+| `disable-2fa` | 彻底关闭 / 禁用 2FA 双重认证（应急恢复） |
+| `help` | 显示命令行帮助信息 |
 
 **使用示例：**
 
 ```bash
-./mc-web-panel-linux-x64 start              # 后台启动面板
-./mc-web-panel-linux-x64 stop               # 停止面板
-./mc-web-panel-linux-x64 restart            # 重启面板
-./mc-web-panel-linux-x64 host 0.0.0.0 8080  # 同时修改监听地址与端口
-./mc-web-panel-linux-x64 port 8080          # 将端口改为 8080
-./mc-web-panel-linux-x64 reset              # 重置 2FA 密钥
+./4ypanel-linux-x64 start                      # 后台启动面板
+./4ypanel-linux-x64 stop                       # 停止面板
+./4ypanel-linux-x64 restart                    # 重启面板
+./4ypanel-linux-x64 host 0.0.0.0 8080          # 同时修改监听地址与端口
+./4ypanel-linux-x64 port 8080                  # 将端口改为 8080
+./4ypanel-linux-x64 reset-password             # 自动生成随机密码重置管理员
+./4ypanel-linux-x64 reset-password 12345678    # 将管理员密码重置为 12345678
+./4ypanel-linux-x64 reset-2fa                  # 重置 2FA 密钥并输出二维码
+./4ypanel-linux-x64 disable-2fa                # 应急彻底关闭 2FA
 ```
 
 ### 🤝 贡献指南
@@ -164,9 +175,12 @@ npm run build
 
 ### ✨ Introduction
 
-MC Web Panel is a lightweight, modern, and high-performance Minecraft server management panel built with **Node.js** and **Vue 3**. It delivers native, multi-architecture support for all major Minecraft servers—including **Official Vanilla**, **Modern Plugin Servers (Paper / Purpur / Spigot)**, and **Modded Servers (Fabric / Forge / NeoForge)**—empowering server owners to effortlessly manage server lifecycles, extensions, players, files, and automation scripts.
+> [!NOTE]
+> **Rename Notice**: This project has been officially renamed to **4YPanel** (formerly known as **MC Web Panel** / `mc-web-panel`).
 
-Whether it's a personal server or a small community, MC Web Panel provides you with a professional management experience!
+**4YPanel** is a lightweight, modern, and high-performance Minecraft server management panel built with **Node.js** and **Vue 3**. It delivers native, multi-architecture support for all major Minecraft servers—including **Official Vanilla**, **Modern Plugin Servers (Paper / Purpur / Spigot)**, and **Modded Servers (Fabric / Forge / NeoForge)**—empowering server owners to effortlessly manage server lifecycles, extensions, players, files, and automation scripts.
+
+Whether it's a personal server or a small community, **4YPanel** provides you with a professional management experience!
 
 ### 📸 Screenshots
 
@@ -195,13 +209,13 @@ Whether it's a personal server or a small community, MC Web Panel provides you w
 | 🐧 **System Support** | Officially supports **Linux** (x64 / ARM64) only. For other OS (e.g., Windows / macOS), users need to clone the repository, adapt slightly, and build/run manually |
 | 🔌 **Plugin Extension Architecture** | Modular architecture allowing developers to extend backend logic and frontend UI easily |
 
-### 🎯 Why Choose MC Web Panel?
+### 🎯 Why Choose 4YPanel?
 
 1. **Universal Multi-Architecture** - Vanilla, Paper, Purpur, Spigot, Fabric, Forge, and NeoForge all supported out of the box
-2. **Lightweight & Efficient** - Low resource consumption, fast startup, and minimal dependencies
-3. **Easy to Use** - Intuitive, adaptive interface design with zero learning curve
-4. **Comprehensive Features** - Covers extension management, file operations, player controls, and automation scripts
-5. **Continuous Updates** - Active development community with steady iterations
+2. **Lightweight & High Efficiency** - ~70MB idle RAM usage, lightning-fast boot time, minimal dependencies, perfect for low-spec VPS
+3. **Easy to Use** - Beautiful, responsive glassmorphism UI/UX designed for both desktop and mobile
+4. **Comprehensive Features** - Extension management, multi-dimension world viewers, file operations, player controls, and non-intrusive automation scripts
+5. **Continuous Updates** - Active development community with self-healing lifecycle mechanisms
 6. **Open Source & Free** - Completely open source, free to use and modify
 
 ### 📜 Scroll Automation System
@@ -231,12 +245,12 @@ This panel features dedicated GUI integrations for:
 
 #### Method 1: Using Pre-built Executable (Recommended for Linux)
 
-1. Download the executable for your Linux architecture from the [Releases](https://github.com/4YStudio/mc-web-panel/releases) page (`mc-web-panel-linux-x64` or `mc-web-panel-linux-arm64`)
+1. Download the executable for your Linux architecture from the [Releases](https://github.com/4YStudio/4YPanel/releases) page (`4ypanel-linux-x64` or `4ypanel-linux-arm64`)
 2. Place it in an empty directory (recommended)
 3. Grant execution permissions and run:
    ```bash
-   chmod +x mc-web-panel-linux-x64
-   ./mc-web-panel-linux-x64 start
+   chmod +x 4ypanel-linux-x64
+   ./4ypanel-linux-x64 start
    ```
 4. Open your browser and visit `http://localhost:3000`
 5. Follow the setup wizard to install a Minecraft server or point it to your existing server jar
@@ -247,8 +261,8 @@ If you wish to run from source code or adapt for other operating systems (requir
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/4YStudio/mc-web-panel.git
-cd mc-web-panel
+git clone https://github.com/4YStudio/4YPanel.git
+cd 4YPanel
 
 # 2. Install dependencies
 npm install
@@ -267,22 +281,27 @@ npm run build
 | Command | Description |
 |---|---|
 | `start` | Start the panel (runs in background, default) |
-| `stop` | Stop the panel |
-| `restart` | Restart the panel |
+| `stop` | Stop the panel (supports `--force` for SIGKILL) |
+| `restart` | Restart the panel (supports `--force`) |
 | `host <ip> [port]` | Change the panel listening address and/or port (e.g., `host 0.0.0.0 3000` or `host 8080`) |
 | `port <port>` | Change the panel port (e.g., `port 8080`) |
-| `reset` | Reset the 2FA key and print the new secret |
-| `help` | Show help information |
+| `reset-password [user] [pass]` | Reset password for admin or sub-account (generates random secure password if blank) |
+| `reset-2fa` (or `reset`) | Reset and regenerate 2FA secret and QR URI |
+| `disable-2fa` | Completely disable 2FA (emergency recovery) |
+| `help` | Show CLI help information |
 
 **Examples:**
 
 ```bash
-./mc-web-panel-linux-x64 start              # Start panel in background
-./mc-web-panel-linux-x64 stop               # Stop panel
-./mc-web-panel-linux-x64 restart            # Restart panel
-./mc-web-panel-linux-x64 host 0.0.0.0 8080  # Change both listening address and port
-./mc-web-panel-linux-x64 port 8080          # Change port to 8080
-./mc-web-panel-linux-x64 reset              # Reset 2FA credentials
+./4ypanel-linux-x64 start                      # Start panel in background
+./4ypanel-linux-x64 stop                       # Stop panel
+./4ypanel-linux-x64 restart                    # Restart panel
+./4ypanel-linux-x64 host 0.0.0.0 8080          # Change both listening address and port
+./4ypanel-linux-x64 port 8080                  # Change port to 8080
+./4ypanel-linux-x64 reset-password             # Reset admin password with a random secure password
+./4ypanel-linux-x64 reset-password 12345678    # Reset admin password to 12345678
+./4ypanel-linux-x64 reset-2fa                  # Reset 2FA key and print QR URI
+./4ypanel-linux-x64 disable-2fa                # Emergency disable 2FA
 ```
 
 ### 🤝 Contributing

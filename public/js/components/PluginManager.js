@@ -20,10 +20,10 @@ export default {
                 </div>
             </div>
             <div class="d-flex gap-1.5 gap-md-2 align-items-center ms-auto">
-                <a href="https://4ystudio.github.io/mc-web-panel/market.html" target="_blank" class="btn btn-outline-info rounded-pill px-2.5 px-md-4 py-1.5 py-md-2" :title="$t('plugins.market_button')">
+                <a href="https://4ystudio.github.io/4YPanel/market.html" target="_blank" class="btn btn-outline-info rounded-pill px-2.5 px-md-4 py-1.5 py-md-2" :title="$t('plugins.market_button')">
                     <i class="fa-solid fa-store"></i><span class="d-none d-md-inline ms-1">{{ $t('plugins.market_button') }}</span>
                 </a>
-                <a href="https://4ystudio.github.io/mc-web-panel/" target="_blank" class="btn btn-outline-primary rounded-pill px-2.5 px-md-4 py-1.5 py-md-2" :title="$t('plugins.guide_button')">
+                <a href="https://4ystudio.github.io/4YPanel/" target="_blank" class="btn btn-outline-primary rounded-pill px-2.5 px-md-4 py-1.5 py-md-2" :title="$t('plugins.guide_button')">
                     <i class="fa-solid fa-book"></i><span class="d-none d-md-inline ms-1">{{ $t('plugins.guide_button') }}</span>
                 </a>
                 <button class="btn btn-primary rounded-pill px-2.5 px-md-4 py-1.5 py-md-2 fw-bold shadow-sm" @click="openInstallModal" :title="$t('plugins.install')">

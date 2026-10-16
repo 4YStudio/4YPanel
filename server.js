@@ -34,12 +34,12 @@ try {
 } catch (_) {}
 
 const pkgInfo = (() => {
-    try { return require('./package.json'); } catch (e) { return { version: '2.6.0' }; }
+    try { return require('./package.json'); } catch (e) { return { version: '2.6.3' }; }
 })();
-const APP_VERSION = pkgInfo.version || '2.6.0';
+const APP_VERSION = pkgInfo.version || '2.6.3';
 const STARTUP_TIME = Date.now();
 const APP_CODENAME = 'Universal Multi-Architecture Support';
-const MODRINTH_UA = `CloudSpeak/MC-Panel/${APP_VERSION} (henvei@cloudspeak.com)`;
+const MODRINTH_UA = `CloudSpeak/4YPanel/${APP_VERSION} (henvei@cloudspeak.com)`;
 
 // ==================== NBT Reader for Player Data ====================
 class NBTReader {
@@ -850,13 +850,13 @@ const getNetworkAddresses = () => {
 // Helper: 打印包含详细访问地址与修改指引的启动横幅
 const printStartupBanner = ({ host, port, pid = null, isDaemon = false }) => {
     const lanIps = getNetworkAddresses();
-    const appName = APP_EXECUTABLE ? path.basename(APP_EXECUTABLE) : 'mc-web-panel';
+    const appName = APP_EXECUTABLE ? path.basename(APP_EXECUTABLE) : '4ypanel';
 
     console.log('');
     if (isDaemon && pid) {
         console.log(`  ✅ 面板已在后台启动 (PID: ${pid})`);
     } else {
-        console.log(`  ☘️  MC Web Panel v${APP_VERSION}`);
+        console.log(`  ☘️  4YPanel v${APP_VERSION}`);
     }
     console.log('');
     console.log(`  ➜  本地访问:  http://localhost:${port}`);
@@ -922,9 +922,9 @@ if (command === 'host' || command === 'port') {
 
     if (!arg1) {
         console.log('用法:');
-        console.log('  ./mc-web-panel host <IP地址> [端口]    (例如: ./mc-web-panel host 0.0.0.0 3000)');
-        console.log('  ./mc-web-panel host <端口>             (例如: ./mc-web-panel host 8080)');
-        console.log('  ./mc-web-panel port <端口>             (例如: ./mc-web-panel port 8080)');
+        console.log('  ./4ypanel host <IP地址> [端口]    (例如: ./4ypanel host 0.0.0.0 3000)');
+        console.log('  ./4ypanel host <端口>             (例如: ./4ypanel host 8080)');
+        console.log('  ./4ypanel port <端口>             (例如: ./4ypanel port 8080)');
         process.exit(1);
     }
 
@@ -973,21 +973,138 @@ if (command === 'host' || command === 'port') {
     process.exit(0);
 }
 
-if (command === 'reset') {
+if (command === 'reset-password' || command === 'set-password' || command === 'passwd') {
+    fs.ensureDirSync(DATA_DIR);
+    let config = fs.existsSync(CONFIG_FILE) ? fs.readJsonSync(CONFIG_FILE) : {};
+    let users = loadUsers();
+
+    const adminUser = config.username || 'admin';
+    const arg1 = userArgs[1];
+    const arg2 = userArgs[2];
+
+    const generateRandomPassword = (length = 12) => {
+        const charset = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz#@$%&*';
+        let pwd = '';
+        const bytes = crypto.randomBytes(length);
+        for (let i = 0; i < length; i++) {
+            pwd += charset[bytes[i] % charset.length];
+        }
+        return pwd;
+    };
+
+    let targetUsername = adminUser;
+    let newPassword = null;
+    let isSubAccount = false;
+    let targetUserObj = null;
+
+    if (!arg1 && !arg2) {
+        // 无参数：重置管理员，生成随机强密码
+        targetUsername = adminUser;
+        newPassword = generateRandomPassword();
+    } else if (arg1 && !arg2) {
+        // 单个参数：
+        const matchedSub = users.find(u => (u.username || '').toLowerCase() === arg1.toLowerCase());
+        if (matchedSub) {
+            targetUsername = matchedSub.username;
+            isSubAccount = true;
+            targetUserObj = matchedSub;
+            newPassword = generateRandomPassword();
+        } else if (arg1.toLowerCase() === adminUser.toLowerCase()) {
+            targetUsername = adminUser;
+            newPassword = generateRandomPassword();
+        } else {
+            // 当作管理员的新密码
+            targetUsername = adminUser;
+            newPassword = arg1;
+        }
+    } else {
+        // 两个参数：arg1 为用户名，arg2 为新密码
+        const target = arg1;
+        newPassword = arg2;
+
+        if (target.toLowerCase() === adminUser.toLowerCase()) {
+            targetUsername = adminUser;
+            isSubAccount = false;
+        } else {
+            const matchedSub = users.find(u => (u.username || '').toLowerCase() === target.toLowerCase());
+            if (matchedSub) {
+                targetUsername = matchedSub.username;
+                isSubAccount = true;
+                targetUserObj = matchedSub;
+            } else {
+                console.log(`❌ 错误: 未找到用户 "${target}"。`);
+                console.log(`   主管理员: ${adminUser}`);
+                if (users.length > 0) {
+                    console.log(`   现有子账号: ${users.map(u => u.username).join(', ')}`);
+                }
+                process.exit(1);
+            }
+        }
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+        console.log('❌ 错误: 密码长度必须大于等于 6 位。');
+        process.exit(1);
+    }
+
+    const { hash, salt } = hashPassword(newPassword);
+
+    if (isSubAccount && targetUserObj) {
+        targetUserObj.passwordHash = hash;
+        targetUserObj.passwordSalt = salt;
+        saveUsers(users);
+    } else {
+        config.username = targetUsername;
+        config.passwordHash = hash;
+        config.passwordSalt = salt;
+        config.isSetup = true;
+        fs.writeJsonSync(CONFIG_FILE, config, { spaces: 2 });
+    }
+
+    console.log('==================================================');
+    console.log('  ✅ 密码已成功重置！');
+    console.log('--------------------------------------------------');
+    console.log(`  账号身份:   ${isSubAccount ? '子账号 (Sub-account)' : '主管理员 (Admin)'}`);
+    console.log(`  用户名:     ${targetUsername}`);
+    console.log(`  新密码:     ${newPassword}`);
+    console.log(`  配置文件:   ${isSubAccount ? USERS_FILE : CONFIG_FILE}`);
+    console.log('==================================================');
+    console.log('提示：若面板正在运行，新密码立即生效。请妥善保存新密码！');
+    process.exit(0);
+}
+
+if (command === 'reset' || command === 'reset-2fa') {
     fs.ensureDirSync(DATA_DIR);
     let config = fs.existsSync(CONFIG_FILE) ? fs.readJsonSync(CONFIG_FILE) : {};
     const newSecret = authenticator.generateSecret();
     config.secret = newSecret;
     fs.writeJsonSync(CONFIG_FILE, config, { spaces: 2 });
-    const otpauth = authenticator.keyuri('Admin', 'MC-Panel', newSecret);
-    console.log('✅ 2FA 密钥已重置！');
-    console.log('');
-    console.log(`  新密钥: ${newSecret}`);
+    const adminUser = config.username || 'Admin';
+    const otpauth = authenticator.keyuri(adminUser, '4YPanel', newSecret);
+    console.log('==================================================');
+    console.log('  ✅ 2FA (两步验证) 密钥已成功重置！');
+    console.log('--------------------------------------------------');
+    console.log(`  管理员账号:  ${adminUser}`);
+    console.log(`  新 2FA 密钥: ${newSecret}`);
     console.log(`  OTPAuth URI: ${otpauth}`);
-    console.log('');
+    console.log('==================================================');
     console.log('请使用 Google Authenticator 或其他 TOTP 应用扫描以上信息。');
     process.exit(0);
 }
+
+if (command === 'disable-2fa' || command === 'clear-2fa' || command === 'off-2fa') {
+    fs.ensureDirSync(DATA_DIR);
+    let config = fs.existsSync(CONFIG_FILE) ? fs.readJsonSync(CONFIG_FILE) : {};
+    config.secret = '';
+    fs.writeJsonSync(CONFIG_FILE, config, { spaces: 2 });
+    console.log('==================================================');
+    console.log('  ✅ 2FA (两步验证) 已彻底禁用/关闭！');
+    console.log('--------------------------------------------------');
+    console.log('提示：当前登录将不再需要 TOTP 验证码。如需重新启用，可在面板中重新绑定，或在终端执行 reset-2fa。');
+    console.log('==================================================');
+    process.exit(0);
+}
+
 
 if (command === 'stop') {
     const force = userArgs.includes('--force') || userArgs.includes('-f');
@@ -1071,26 +1188,33 @@ if (command === 'stop') {
         doStart();
     }
 } else if (command === 'help' || command === '--help' || command === '-h') {
-    const name = APP_EXECUTABLE ? path.basename(APP_EXECUTABLE) : 'mc-web-panel';
-    console.log(`MC Web Panel v${APP_VERSION}`);
+    const name = APP_EXECUTABLE ? path.basename(APP_EXECUTABLE) : '4ypanel';
+    console.log(`4YPanel v${APP_VERSION}`);
     console.log('');
     console.log('用法:');
     console.log(`  ./${name} [命令] [选项]`);
     console.log('');
-    console.log('命令:');
-    console.log('  start                  启动面板（后台运行，默认）');
-    console.log('  stop                   停止面板');
-    console.log('  restart                重启面板');
-    console.log('  host <地址> [端口]      修改面板监听地址及端口 (例如: host 0.0.0.0 3000)');
-    console.log('  port <端口>             修改面板端口 (例如: port 3000)');
-    console.log('  reset                  重置 2FA 密钥');
-    console.log('  help                   显示帮助');
+    console.log('服务运维命令:');
+    console.log('  start                                  启动面板（后台运行，默认）');
+    console.log('  stop                                   停止面板');
+    console.log('  restart                                重启面板');
+    console.log('  host <地址> [端口]                      修改面板监听地址及端口 (例如: host 0.0.0.0 3000)');
+    console.log('  port <端口>                             修改面板端口 (例如: port 3000)');
+    console.log('');
+    console.log('账号与安全管理命令:');
+    console.log('  reset-password [用户名] [新密码]        重置管理员或子账号密码（留空密码自动生成随机高强度密码）');
+    console.log('                                         - 自动生成密码: reset-password');
+    console.log('                                         - 重置管理员:   reset-password <新密码>');
+    console.log('                                         - 重置指定用户: reset-password <用户名> <新密码>');
+    console.log('  reset-2fa (或 reset)                   重置并生成新的 2FA (两步验证) 密钥与二维码 URI');
+    console.log('  disable-2fa                            彻底关闭/禁用 2FA 双重认证（应急恢复）');
+    console.log('  help                                   显示帮助信息');
     console.log('');
     console.log('选项:');
-    console.log('  --host <地址>          指定监听地址 (优先级高于配置文件)');
-    console.log('  --port <端口>          指定监听端口 (优先级高于配置文件)');
-    console.log('  --force, -f            强制停止/重启（跳过运行中实例检查，可能导致数据丢失）');
-    console.log('  --no-cluster           以单进程轻量模式运行（适合低配 VPS，省去 Master 守护进程物理内存）');
+    console.log('  --host <地址>                          指定监听地址 (优先级高于配置文件)');
+    console.log('  --port <端口>                          指定监听端口 (优先级高于配置文件)');
+    console.log('  --force, -f                            强制停止/重启（跳过运行中实例检查，可能导致数据丢失）');
+    console.log('  --no-cluster                           以单进程轻量模式运行（适合低配 VPS，省去 Master 守护进程物理内存）');
     process.exit(0);
 } else {
     // start 命令（默认行为）
@@ -1556,12 +1680,12 @@ if (!isSingleProcess && cluster.isPrimary) {
 
 
     app.use(express.static(path.join(__dirname, 'public')));
-    app.use('/dev-guide', (req, res) => res.redirect('https://4ystudio.github.io/mc-web-panel/'));
-    app.use('/scrolls-guide', (req, res) => res.redirect('https://4ystudio.github.io/mc-web-panel/scrolls-guide/'));
-    app.use('/scrolls-market.html', (req, res) => res.redirect('https://4ystudio.github.io/mc-web-panel/scrolls-market.html'));
-    app.use('/scrolls-market', (req, res) => res.redirect('https://4ystudio.github.io/mc-web-panel/scrolls-market.html'));
-    app.use('/market.html', (req, res) => res.redirect('https://4ystudio.github.io/mc-web-panel/market.html'));
-    app.use('/market', (req, res) => res.redirect('https://4ystudio.github.io/mc-web-panel/market.html'));
+    app.use('/dev-guide', (req, res) => res.redirect('https://4ystudio.github.io/4YPanel/'));
+    app.use('/scrolls-guide', (req, res) => res.redirect('https://4ystudio.github.io/4YPanel/scrolls-guide/'));
+    app.use('/scrolls-market.html', (req, res) => res.redirect('https://4ystudio.github.io/4YPanel/scrolls-market.html'));
+    app.use('/scrolls-market', (req, res) => res.redirect('https://4ystudio.github.io/4YPanel/scrolls-market.html'));
+    app.use('/market.html', (req, res) => res.redirect('https://4ystudio.github.io/4YPanel/market.html'));
+    app.use('/market', (req, res) => res.redirect('https://4ystudio.github.io/4YPanel/market.html'));
     app.use(bodyParser.json());
     app.use(session({
         secret: appConfig.sessionSecret,
@@ -3371,7 +3495,7 @@ threaded_server_support=false
     });
 
     // --- Core Version Management API (Vanilla / Paper / Purpur / Fabric / Forge / NeoForge) ---
-    const USER_AGENT_PANEL = `MC-Web-Panel/${APP_VERSION} (https://github.com/4YStudio/mc-web-panel)`;
+    const USER_AGENT_PANEL = `4YPanel/${APP_VERSION} (https://github.com/4YStudio/4YPanel)`;
 
     // --- 1. Mojang Official Vanilla Manifest ---
     let mojangManifestCache = null;
@@ -4726,7 +4850,7 @@ threaded_server_support=false
     app.get('/api/panel/2fa/generate', requirePermission('panel.settings'), async (req, res) => {
         try {
             const secret = authenticator.generateSecret();
-            const otpauth = authenticator.keyuri('Admin', 'MC-Panel', secret);
+            const otpauth = authenticator.keyuri('Admin', '4YPanel', secret);
             QRCode.toDataURL(otpauth, (err, qr) => {
                 if (err) throw err;
                 res.json({ secret, qr });
@@ -5307,7 +5431,21 @@ threaded_server_support=false
         app.post(`${prefix}/restore`, requireBackupAccess, handleBackupRestore);
     }
 
+    const syncAuthConfigFromDisk = () => {
+        try {
+            if (fs.existsSync(CONFIG_FILE)) {
+                const diskConfig = fs.readJsonSync(CONFIG_FILE);
+                if (diskConfig.username !== undefined) appConfig.username = diskConfig.username;
+                if (diskConfig.passwordHash !== undefined) appConfig.passwordHash = diskConfig.passwordHash;
+                if (diskConfig.passwordSalt !== undefined) appConfig.passwordSalt = diskConfig.passwordSalt;
+                if (diskConfig.secret !== undefined) appConfig.secret = diskConfig.secret;
+                if (diskConfig.isSetup !== undefined) appConfig.isSetup = diskConfig.isSetup;
+            }
+        } catch (_) { }
+    };
+
     app.get('/api/auth/check', (req, res) => {
+        syncAuthConfigFromDisk();
         let isSetup = false;
         try {
             const instId = instanceConfig.activeInstanceId || 'default';
@@ -5354,7 +5492,7 @@ threaded_server_support=false
             if (!req.session.tempSecret) req.session.tempSecret = authenticator.generateSecret();
             secret = req.session.tempSecret;
         }
-        QRCode.toDataURL(authenticator.keyuri('Admin', 'MC-Panel', secret), (err, url) => {
+        QRCode.toDataURL(authenticator.keyuri('Admin', '4YPanel', secret), (err, url) => {
             res.json({ qr: url, secret: secret });
         });
     });
@@ -5398,6 +5536,7 @@ threaded_server_support=false
     });
 
     app.post('/api/auth/login', (req, res) => {
+        syncAuthConfigFromDisk();
         const { username, password, captcha, token } = req.body;
 
         // 1. 防爆破检测
@@ -5543,7 +5682,7 @@ threaded_server_support=false
     app.get('/api/users/qr', requireAdmin, (req, res) => {
         const { username, tempSecret } = req.query;
         const secret = tempSecret || authenticator.generateSecret();
-        QRCode.toDataURL(authenticator.keyuri(username || 'SubAccount', 'MC-Panel', secret), (err, url) => {
+        QRCode.toDataURL(authenticator.keyuri(username || 'SubAccount', '4YPanel', secret), (err, url) => {
             res.json({ qr: url, secret });
         });
     });
@@ -5795,7 +5934,7 @@ threaded_server_support=false
                     const resp = await axios.get(url, {
                         responseType: 'arraybuffer',
                         timeout: 3000,
-                        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) mc-web-panel/2.4.0' }
+                        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) 4ypanel/2.4.0' }
                     });
                     if (resp.status === 200 && resp.data && resp.data.length > 100) {
                         const contentType = resp.headers['content-type'] || 'image/png';
@@ -7005,7 +7144,7 @@ threaded_server_support=false
     app.get('/api/system/update_check', requireAuth, async (req, res) => {
         try {
             const currentVersion = APP_VERSION;
-            const apiUrl = 'https://api.github.com/repos/4YStudio/mc-web-panel/releases/latest';
+            const apiUrl = 'https://api.github.com/repos/4YStudio/4YPanel/releases/latest';
             const headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
                 'Accept': 'application/vnd.github.v3+json'
@@ -7061,7 +7200,7 @@ threaded_server_support=false
 
         try {
             // 1. 获取最新版本信息
-            const apiUrl = 'https://api.github.com/repos/4YStudio/mc-web-panel/releases/latest';
+            const apiUrl = 'https://api.github.com/repos/4YStudio/4YPanel/releases/latest';
             const headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
                 'Accept': 'application/vnd.github.v3+json'

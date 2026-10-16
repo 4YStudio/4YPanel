@@ -22,10 +22,10 @@ export default {
                 </div>
             </div>
             <div class="d-flex gap-2">
-                <a href="https://4ystudio.github.io/mc-web-panel/scrolls-market.html" target="_blank" class="btn btn-outline-info rounded-pill px-3 px-md-4">
+                <a href="https://4ystudio.github.io/4YPanel/scrolls-market.html" target="_blank" class="btn btn-outline-info rounded-pill px-3 px-md-4">
                     <i class="fa-solid fa-store"></i><span class="d-none d-md-inline ms-1">{{ $t('scrolls.market_button') }}</span>
                 </a>
-                <a href="https://4ystudio.github.io/mc-web-panel/scrolls-guide/" target="_blank" class="btn btn-outline-primary rounded-pill px-3 px-md-4">
+                <a href="https://4ystudio.github.io/4YPanel/scrolls-guide/" target="_blank" class="btn btn-outline-primary rounded-pill px-3 px-md-4">
                     <i class="fa-solid fa-book"></i><span class="d-none d-md-inline ms-1">{{ $t('scrolls.guide_button') }}</span>
                 </a>
                 <button class="btn btn-primary rounded-pill px-3 px-md-4 fw-bold shadow-sm" @click="openInstallModal">
@@ -235,7 +235,7 @@ export default {
                                                 <div class="text-muted small" style="font-size: 0.75rem;">{{ $t('scrolls.market_desc') }}</div>
                                             </div>
                                         </div>
-                                        <a href="https://4ystudio.github.io/mc-web-panel/scrolls-market.html" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 flex-shrink-0 fw-bold">
+                                        <a href="https://4ystudio.github.io/4YPanel/scrolls-market.html" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 flex-shrink-0 fw-bold">
                                             <span>{{ $t('scrolls.market_link') }}</span>
                                             <i class="fa-solid fa-arrow-up-right-from-square ms-1" style="font-size: 0.72rem;"></i>
                                         </a>

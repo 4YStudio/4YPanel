@@ -33,7 +33,7 @@ export default {
                                 </p>
                                 
                                 <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                                    <a href="https://github.com/4YStudio/mc-web-panel" target="_blank" class="btn btn-outline-secondary btn-lg px-4 gap-3">
+                                    <a href="https://github.com/4YStudio/4YPanel" target="_blank" class="btn btn-outline-secondary btn-lg px-4 gap-3">
                                         <i class="fa-brands fa-github"></i> {{ $t('about.source') }}
                                     </a>
                                 </div>
@@ -78,7 +78,7 @@ export default {
                                 <hr class="my-4">
                                 
                                 <div class="text-muted small">
-                                    <p class="mb-1">&copy; 2025 MC Web Panel. All rights reserved.</p>
+                                    <p class="mb-1">&copy; 2026 4YPanel. All rights reserved.</p>
                                 </div>
                             </div>
                         </div>

@@ -1,7 +1,7 @@
 {
-  "name": "mc-web-panel",
-  "version": "2.6.1",
-  "description": "A web panel for Minecraft servers.",
+  "name": "4ypanel",
+  "version": "2.6.3",
+  "description": "4YPanel - A modern, lightweight, high-performance web panel for Minecraft servers.",
   "main": "index.js",
   "bin": "server.js",
   "scripts": {
@@ -15,18 +15,19 @@
   "keywords": [
     "minecraft",
     "minecraft-server",
-    "web-panel"
+    "web-panel",
+    "4ypanel"
   ],
   "author": "4YStudio",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/4YStudio/mc-web-panel.git"
+    "url": "https://github.com/4YStudio/4YPanel.git"
   },
   "bugs": {
-    "url": "https://github.com/4YStudio/mc-web-panel/issues"
+    "url": "https://github.com/4YStudio/4YPanel/issues"
   },
-  "homepage": "https://github.com/4YStudio/mc-web-panel#readme",
+  "homepage": "https://github.com/4YStudio/4YPanel#readme",
   "type": "commonjs",
   "dependencies": {
     "adm-zip": "^0.5.16",

@@ -41,7 +41,7 @@ const client = axios.create({
 
 const printUsage = () => {
     console.log(`
-☘️  MC Web Panel 命令行管理工具 (CLI Helper)
+☘️  4YPanel 命令行管理工具 (CLI Helper)
 
 使用格式:
   agy-cli <command> [arguments]

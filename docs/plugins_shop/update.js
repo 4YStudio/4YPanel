@@ -43,7 +43,7 @@ if (fs.existsSync(SHOP_DIR)) {
                     id: meta.id,
                     name: nameZh || meta.id,
                     version: meta.version || '1.0.0',
-                    author: meta.author || 'MWP Official',
+                    author: meta.author || '4YPanel Official',
                     description: descZh || '',
                     category: category,
                     permissions: meta.permissions || [],

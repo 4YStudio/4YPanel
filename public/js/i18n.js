@@ -192,8 +192,8 @@ export const messages = {
             deleted_success: '{name} 已卸载'
         },
         about: {
-            title: '关于 MWP',
-            description: '一个轻量级、现代化的 Fabric 服务器管理面板。',
+            title: '关于 4YPanel',
+            description: '一个轻量级、现代化的 Minecraft 服务器管理面板。',
             version: '版本',
             author: '作者',
             version: '版本',
@@ -1514,8 +1514,8 @@ export const messages = {
             deleted_success: '{name} uninstalled successfully'
         },
         about: {
-            title: 'About MWP',
-            description: 'A lightweight, modern Fabric server management panel.',
+            title: 'About 4YPanel',
+            description: 'A lightweight, modern Minecraft server management panel.',
             version: 'Version',
             author: 'Author',
             version: 'Version',

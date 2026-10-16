@@ -172,7 +172,7 @@ if (_isDaemon || !isNode) {
 // --- Method 1: Detect caxa environment from extraction path ---
 const caxaMatch = process.execPath.match(/[\/\\]caxa[\/\\]applications[\/\\]([^\/\\]+)[\/\\]/);
 if (caxaMatch) {
-    const exeName = caxaMatch[1]; // e.g. "MWP-216-linux-x64"
+    const exeName = caxaMatch[1]; // e.g. "4YPanel-263-linux-x64"
     console.log(`  Detected caxa environment, executable name: ${exeName}`);
     
     // Try multiple possible locations for the wrapper

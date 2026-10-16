@@ -1,5 +1,5 @@
 /**
- * MC Web Panel - 卷轴市场 JavaScript 交互逻辑
+ * 4YPanel - 卷轴市场 JavaScript 交互逻辑
  */
 (function () {
     let SCROLLS_DATA = [];
@@ -230,7 +230,7 @@
                 <div class="modal-meta-item">
                     <span class="modal-meta-label">开源库及支持</span>
                     <span class="modal-meta-value">
-                        <a href="https://github.com/4ystudio/mc-web-panel" target="_blank">
+                        <a href="https://github.com/4YStudio/4YPanel" target="_blank">
                             <i class="fa-brands fa-github"></i> GitHub 主仓
                         </a>
                     </span>
@@ -245,7 +245,7 @@
                     </h4>
                     <ol style="padding-left: 20px; font-size: 0.85rem; color: var(--c-text-secondary); line-height: 1.6; margin-bottom: 0;">
                         <li>点击右侧按钮下载 <code>${scroll.id}.zip</code> 压缩包；</li>
-                        <li>在 MC Web Panel 控制台对应实例中，打开左侧边栏的 <strong>「卷轴管理」</strong> 界面；</li>
+                        <li>在 4YPanel 控制台对应实例中，打开左侧边栏的 <strong>「卷轴管理」</strong> 界面；</li>
                         <li>点击右上角的 <strong>「安装卷轴」</strong> 按钮并上传刚才下载的 ZIP 包，系统将全自动部署生效！</li>
                     </ol>
                 </div>

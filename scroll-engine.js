@@ -1,5 +1,5 @@
 /**
- * MC Web Panel - 卷轴引擎 (Scroll Engine)
+ * 4YPanel - 卷轴引擎 (Scroll Engine)
  * 轻量、免侵入的 Minecraft 控制台事件驱动与自动化脚本系统
  * 
  * 核心设计架构：

@@ -1,6 +1,6 @@
 /**
- * 云语软件中心 Minecraft Web Panel - 插件系统 TypeScript 类型定义
- * CloudLanguage MC Web Panel - Plugin System TypeScript Definitions
+ * 云语软件中心 4YPanel - 插件系统 TypeScript 类型定义
+ * CloudLanguage 4YPanel - Plugin System TypeScript Definitions
  * 
  * @version 2.4.0
  */

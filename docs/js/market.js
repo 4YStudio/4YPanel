@@ -1,5 +1,5 @@
 /**
- * MC Web Panel - 插件市场 JavaScript 交互逻辑
+ * 4YPanel - 插件市场 JavaScript 交互逻辑
  */
 (function () {
     // 注册 Service Worker 实现网络优先策略，解决 GitHub Pages 缓存问题
@@ -261,7 +261,7 @@
                 <div class="modal-meta-item">
                     <span class="modal-meta-label">开源库及支持</span>
                     <span class="modal-meta-value">
-                        <a href="https://github.com/4ystudio/mc-web-panel" target="_blank">
+                        <a href="https://github.com/4YStudio/4YPanel" target="_blank">
                             <i class="fa-brands fa-github"></i> GitHub 主仓
                         </a>
                     </span>
@@ -278,7 +278,7 @@
                         <li>点击右侧按钮直接下载该插件的 ZIP 包（<code>${plugin.id}.zip</code>）。</li>
                         <li>在面板运行根目录的 <code>plugins/</code> 目录下新建以 <code>${plugin.id}</code> 命名的子目录。</li>
                         <li>将下载得到的 ZIP 包解压，并将其中的文件（确保 <code>plugin.json</code> 处于该目录下）放进该文件夹中。</li>
-                        <li>重启 MC Web Panel 后台服务以自动检测插件。</li>
+                        <li>重启 4YPanel 后台服务以自动检测插件。</li>
                         <li>访问面板后台“插件管理”菜单，开启 <strong>${plugin.name}</strong> 插件。</li>
                     </ol>
                 </div>

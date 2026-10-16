@@ -7221,7 +7221,8 @@ threaded_server_support=false
             const arch = `linux-${archStr}`;
             const version = (gh.data.tag_name || '').replace(/^[vV]/, '');
             const versionCompact = version.replace(/\./g, '');
-            const assetName = `MWP-${versionCompact}-${arch}`;
+            const primaryAssetName = `4YPanel-${versionCompact}-${arch}`;
+            const assetName = primaryAssetName;
             
             // 1. 精确匹配
             let asset = gh.data.assets.find(a => a.name === assetName);
@@ -7231,7 +7232,7 @@ threaded_server_support=false
                 console.log(`[Update] Exact match for "${assetName}" not found, trying fuzzy match...`);
                 asset = gh.data.assets.find(a => 
                     a.name.includes(arch) && 
-                    a.name.startsWith('MWP-')
+                    a.name.startsWith('4YPanel-')
                 );
             }
             
@@ -7241,7 +7242,7 @@ threaded_server_support=false
                 asset = gh.data.assets.find(a => 
                     (a.name.includes('linux') || a.name.includes(process.platform)) &&
                     (a.name.includes(archStr) || a.name.includes(process.arch)) &&
-                    a.name.startsWith('MWP-')
+                    a.name.startsWith('4YPanel-')
                 );
             }
 

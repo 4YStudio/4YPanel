@@ -1,6 +1,6 @@
 {
   "name": "4ypanel",
-  "version": "2.6.3",
+  "version": "2.6.4",
   "description": "4YPanel - A modern, lightweight, high-performance web panel for Minecraft servers.",
   "main": "index.js",
   "bin": "server.js",

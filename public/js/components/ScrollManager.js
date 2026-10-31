@@ -2,6 +2,7 @@ import { ref, reactive, onMounted, computed, watch, nextTick } from '/js/vue.esm
 import { api } from '../api.js';
 import { store } from '../store.js';
 import { showToast, openModal } from '../utils.js';
+import { createI18n } from '../i18n.js';
 
 export default {
     name: 'ScrollManager',
@@ -22,6 +23,9 @@ export default {
                 </div>
             </div>
             <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary rounded-pill px-3 px-md-4" @click="openSysSettings" :title="$t('scrolls.sys_settings')">
+                    <i class="fa-solid fa-gear"></i><span class="d-none d-md-inline ms-1">{{ $t('scrolls.sys_settings') }}</span>
+                </button>
                 <a href="https://4ystudio.github.io/4YPanel/scrolls-market.html" target="_blank" class="btn btn-outline-info rounded-pill px-3 px-md-4">
                     <i class="fa-solid fa-store"></i><span class="d-none d-md-inline ms-1">{{ $t('scrolls.market_button') }}</span>
                 </a>
@@ -357,6 +361,115 @@ export default {
             </Transition>
         </Teleport>
 
+        <!-- 模态框: 卷轴系统设置（指令反馈策略等实例级行为） -->
+        <Teleport to="body">
+            <Transition name="modal-fade">
+                <div class="modal fade show scroll-sys-modal" v-if="showSysSettings" style="display: block; z-index: 1050;">
+                    <div class="modal-backdrop fade show" @click="closeSysSettings" style="z-index: -1;"></div>
+                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable my-3 mx-auto px-2 px-md-0" style="max-width: 560px;">
+                        <div class="modal-content border-0 shadow-lg">
+                            <div class="modal-header border-0 pb-0 pt-3 pt-md-4 px-3 px-md-4 align-items-start">
+                                <div class="pe-2">
+                                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                                        <i class="fa-solid fa-sliders" style="color: #8b5cf6;"></i>
+                                        <span>{{ $t('scrolls.sys_settings_title') }}</span>
+                                    </h5>
+                                    <div class="text-muted mt-1" style="font-size: 0.75rem; line-height: 1.5;">
+                                        {{ $t('scrolls.sys_settings_subtitle') }}
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-close" @click="closeSysSettings"></button>
+                            </div>
+                            <div class="modal-body px-3 px-md-4 py-3 py-md-4">
+                                <div v-if="sysLoading" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                    <div class="text-muted mt-2 small">{{ $t('common.loading') }}</div>
+                                </div>
+                                <template v-else>
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                        <h6 class="fw-bold mb-0 d-flex align-items-center gap-2" style="font-size: 0.85rem;">
+                                            <i class="fa-solid fa-terminal" style="color: #8b5cf6;"></i>
+                                            {{ $t('scrolls.feedback_section') }}
+                                        </h6>
+                                        <span class="badge rounded-pill" style="background: rgba(139, 92, 246, 0.14); color: #8b5cf6; font-size: 0.66rem; font-weight: 600;">
+                                            <i class="fa-solid fa-cube me-1"></i>{{ currentInstanceName }}
+                                        </span>
+                                    </div>
+                                    <p class="text-muted mb-3" style="font-size: 0.75rem; line-height: 1.6;">
+                                        {{ $t('scrolls.feedback_section_desc') }}
+                                    </p>
+
+                                    <div class="scroll-sys-options">
+                                        <label v-for="opt in feedbackOptions" :key="opt.value"
+                                               class="scroll-sys-option"
+                                               :class="{'is-active': sysSettings.commandFeedback === opt.value}">
+                                            <input type="radio" name="scrollCommandFeedback" :value="opt.value" v-model="sysSettings.commandFeedback">
+                                            <span class="scroll-sys-option-icon"><i class="fa-solid" :class="opt.icon"></i></span>
+                                            <span class="flex-grow-1">
+                                                <span class="d-flex align-items-center gap-2 flex-wrap">
+                                                    <span class="scroll-sys-option-title">{{ $t(opt.label) }}</span>
+                                                    <span v-if="opt.recommended" class="badge rounded-pill"
+                                                          style="font-size: 0.6rem; font-weight: 600; background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3);">
+                                                        {{ $t('scrolls.feedback_recommended') }}
+                                                    </span>
+                                                </span>
+                                                <span class="scroll-sys-option-desc d-block">{{ $t(opt.desc) }}</span>
+                                            </span>
+                                            <span class="scroll-sys-radio"></span>
+                                        </label>
+                                    </div>
+
+                                    <div v-if="sysLoaderWarning" class="alert alert-warning border-0 rounded-3 small mt-3 mb-0 d-flex align-items-start gap-2 animate-in"
+                                         style="font-size: 0.75rem; line-height: 1.55;">
+                                        <i class="fa-solid fa-triangle-exclamation mt-1"></i>
+                                        <span>{{ sysLoaderWarning }}</span>
+                                    </div>
+
+                                    <div class="mt-3">
+                                        <div class="text-muted mb-2 fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.02em;">
+                                            <i class="fa-solid fa-gauge-high me-1"></i>{{ $t('scrolls.sys_runtime_title') }}
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <div class="scroll-sys-stat">
+                                                <div class="scroll-sys-stat-label">{{ $t('scrolls.sys_stat_scrolls') }}</div>
+                                                <div class="scroll-sys-stat-value">{{ sysRuntime.enabledScrolls || 0 }}</div>
+                                            </div>
+                                            <div class="scroll-sys-stat">
+                                                <div class="scroll-sys-stat-label">{{ $t('scrolls.sys_stat_server') }}</div>
+                                                <div class="scroll-sys-stat-value" :class="sysRuntime.serverRunning ? 'text-success' : 'text-muted'">
+                                                    {{ sysRuntime.serverRunning ? $t('scrolls.running') : $t('scrolls.stopped') }}
+                                                </div>
+                                            </div>
+                                            <div class="scroll-sys-stat">
+                                                <div class="scroll-sys-stat-label">{{ $t('scrolls.sys_stat_feedback') }}</div>
+                                                <div class="scroll-sys-stat-value" :style="{ color: feedbackStateColor }">{{ feedbackStateText }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="scroll-sys-note p-2 mt-3 d-flex align-items-start gap-2">
+                                        <i class="fa-solid fa-circle-info mt-1" style="color: #8b5cf6;"></i>
+                                        <span>{{ $t('scrolls.sys_apply_hint') }}</span>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="modal-footer border-0 pt-0 pb-3 pb-md-4 px-3 px-md-4">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" @click="closeSysSettings" :disabled="savingSettings">
+                                    {{ $t('common.cancel') }}
+                                </button>
+                                <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm"
+                                        :disabled="savingSettings || sysLoading" @click="saveSysSettings">
+                                    <span v-if="savingSettings" class="spinner-border spinner-border-sm me-1"></span>
+                                    <i v-else class="fa-solid fa-check me-1"></i>
+                                    <span>{{ $t('scrolls.sys_save_apply') }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
         <!-- 模态框: 删除确认 Modal -->
         <Teleport to="body">
             <Transition name="modal-fade">
@@ -389,6 +502,7 @@ export default {
     </div>
     `,
     setup() {
+        const t = createI18n(store);
         const loading = ref(false);
         const scrolls = ref([]);
         const toggling = ref(null);
@@ -412,6 +526,110 @@ export default {
         // 卸载弹窗
         const showUninstallConfirm = ref(false);
         const scrollToUninstall = ref(null);
+
+        // 卷轴系统设置弹窗（实例级行为策略）
+        const showSysSettings = ref(false);
+        const sysLoading = ref(false);
+        const savingSettings = ref(false);
+        const sysSettings = reactive({ commandFeedback: 'auto' });
+        const sysRuntime = reactive({
+            serverRunning: false,
+            serverStatus: 'stopped',
+            enabledScrolls: 0,
+            silenced: false,
+            effectiveSilence: false,
+            mode: 'auto'
+        });
+
+        const feedbackOptions = [
+            { value: 'auto', icon: 'fa-wand-magic-sparkles', label: 'scrolls.feedback_auto', desc: 'scrolls.feedback_auto_desc', recommended: true },
+            { value: 'silent', icon: 'fa-volume-xmark', label: 'scrolls.feedback_silent', desc: 'scrolls.feedback_silent_desc' },
+            { value: 'native', icon: 'fa-server', label: 'scrolls.feedback_native', desc: 'scrolls.feedback_native_desc' }
+        ];
+
+        const currentLoaderType = computed(() => {
+            const inst = store.instanceList?.find(i => i.id === store.currentInstanceId);
+            return (inst?.loaderType || '').toLowerCase();
+        });
+
+        const isPluginOrModLoader = computed(() => {
+            const lt = currentLoaderType.value;
+            return !!lt && ['paper', 'purpur', 'spigot', 'bukkit', 'forge', 'neoforge', 'fabric', 'quilt'].includes(lt);
+        });
+
+        const sysLoaderWarning = computed(() => {
+            if (!isPluginOrModLoader.value) return '';
+            if (sysSettings.commandFeedback !== 'silent') return '';
+            const labelMap = {
+                paper: 'Paper', purpur: 'Purpur', spigot: 'Spigot', bukkit: 'Bukkit',
+                forge: 'Forge', neoforge: 'NeoForge', fabric: 'Fabric', quilt: 'Quilt'
+            };
+            return t('scrolls.sys_loader_warning', { loader: labelMap[currentLoaderType.value] || currentLoaderType.value });
+        });
+
+        const feedbackStateText = computed(() => {
+            if (sysSettings.commandFeedback === 'native') return t('scrolls.sys_stat_native');
+            if (sysRuntime.silenced) return t('scrolls.sys_stat_silenced');
+            return t('scrolls.sys_stat_normal');
+        });
+
+        const feedbackStateColor = computed(() => {
+            if (sysSettings.commandFeedback === 'native') return 'var(--c-text-secondary)';
+            if (sysRuntime.silenced) return '#f59e0b';
+            return '#22c55e';
+        });
+
+        const applySysPayload = (data) => {
+            if (data && data.settings && data.settings.commandFeedback) {
+                sysSettings.commandFeedback = data.settings.commandFeedback;
+            }
+            if (data && data.runtime) {
+                sysRuntime.serverRunning = !!data.runtime.serverRunning;
+                sysRuntime.serverStatus = data.runtime.serverStatus || 'stopped';
+                sysRuntime.enabledScrolls = data.runtime.enabledScrolls || 0;
+                sysRuntime.silenced = !!data.runtime.silenced;
+                sysRuntime.effectiveSilence = !!data.runtime.effectiveSilence;
+                sysRuntime.mode = data.runtime.mode || sysSettings.commandFeedback;
+            }
+        };
+
+        const loadSysSettings = async () => {
+            sysLoading.value = true;
+            try {
+                const res = await api.get('/api/scrolls/settings');
+                applySysPayload(res.data);
+            } catch (err) {
+                showToast(err.response?.data?.error || 'scrolls.sys_load_failed', 'error');
+            } finally {
+                sysLoading.value = false;
+            }
+        };
+
+        const openSysSettings = async () => {
+            showSysSettings.value = true;
+            await loadSysSettings();
+        };
+
+        const closeSysSettings = () => {
+            if (savingSettings.value) return;
+            showSysSettings.value = false;
+        };
+
+        const saveSysSettings = async () => {
+            savingSettings.value = true;
+            try {
+                const res = await api.post('/api/scrolls/settings', {
+                    commandFeedback: sysSettings.commandFeedback
+                });
+                applySysPayload(res.data);
+                showToast('scrolls.sys_saved', 'success');
+                showSysSettings.value = false;
+            } catch (err) {
+                showToast(err.response?.data?.error || 'scrolls.sys_save_failed', 'error');
+            } finally {
+                savingSettings.value = false;
+            }
+        };
 
         function localize(val) {
             if (!val) return '';
@@ -689,6 +907,19 @@ export default {
             startUpload,
             confirmInstall,
             currentInstanceName,
+            // 卷轴系统设置
+            showSysSettings,
+            sysLoading,
+            savingSettings,
+            sysSettings,
+            sysRuntime,
+            feedbackOptions,
+            sysLoaderWarning,
+            feedbackStateText,
+            feedbackStateColor,
+            openSysSettings,
+            closeSysSettings,
+            saveSysSettings,
             store
         };
     }

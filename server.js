@@ -6221,9 +6221,7 @@ threaded_server_support=false
                 if (instState.status === 'starting' && /(?:Done \([0-9.]+s\)!|Done in [0-9.]+|Done! For help|Timings Reset)/i.test(line)) {
                     instState.status = 'running';
                     io.emit(`status:${instanceId}`, { isRunning: true, status: 'running' });
-                    try {
-                        instState.process.stdin.write('gamerule sendCommandFeedback false\n');
-                    } catch (e) {}
+                    // 指令反馈是否静默交由卷轴引擎按实例策略决定（默认智能模式：无卷轴时不影响服务器）
                     if (scrollEngine) {
                         scrollEngine.handleServerStart(instanceId);
                     }

@@ -4593,6 +4593,197 @@ h3 { font-size: 1.25rem; }
     }
 }
 
+/* ==========================================================================
+   卷轴系统设置对话框（全局样式，跟随亮/暗主题变量 + 入场动画）
+   ========================================================================== */
+.scroll-sys-modal .modal-content {
+    border-radius: 20px;
+    background-color: var(--c-surface);
+    color: var(--c-text-primary);
+    box-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.45);
+}
+
+.scroll-sys-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.scroll-sys-option {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--c-border);
+    border-radius: 14px;
+    background-color: var(--c-surface-elevated);
+    color: var(--c-text-primary);
+    cursor: pointer;
+    opacity: 0;
+    animation: scrollSysOptionIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transition: border-color 0.25s ease, background-color 0.25s ease,
+        box-shadow 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.scroll-sys-option:nth-child(1) { animation-delay: 0.04s; }
+.scroll-sys-option:nth-child(2) { animation-delay: 0.10s; }
+.scroll-sys-option:nth-child(3) { animation-delay: 0.16s; }
+.scroll-sys-option:nth-child(4) { animation-delay: 0.22s; }
+
+.scroll-sys-option:hover {
+    border-color: rgba(139, 92, 246, 0.45);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px -12px rgba(139, 92, 246, 0.6);
+}
+
+.scroll-sys-option.is-active {
+    border-color: rgba(139, 92, 246, 0.7);
+    background-color: rgba(139, 92, 246, 0.08);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+.scroll-sys-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.scroll-sys-option:focus-within {
+    border-color: rgba(139, 92, 246, 0.7);
+}
+
+.scroll-sys-option-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background-color: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+    transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+
+.scroll-sys-option.is-active .scroll-sys-option-icon {
+    background-color: #8b5cf6;
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.scroll-sys-option-title {
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--c-text-primary);
+}
+
+.scroll-sys-option-desc {
+    margin-top: 0.2rem;
+    font-size: 0.75rem;
+    line-height: 1.55;
+    color: var(--c-text-secondary);
+}
+
+.scroll-sys-radio {
+    position: relative;
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    margin-top: 0.15rem;
+    border: 2px solid var(--c-border);
+    border-radius: 50%;
+    transition: border-color 0.2s ease;
+}
+
+.scroll-sys-option.is-active .scroll-sys-radio {
+    border-color: #8b5cf6;
+}
+
+.scroll-sys-option.is-active .scroll-sys-radio::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background-color: #8b5cf6;
+    animation: scrollSysDotIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.scroll-sys-stat {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--c-border-subtle);
+    border-radius: 12px;
+    background-color: var(--c-surface-elevated);
+    text-align: center;
+    transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.scroll-sys-stat:hover {
+    border-color: rgba(139, 92, 246, 0.35);
+    transform: translateY(-1px);
+}
+
+.scroll-sys-stat-label {
+    font-size: 0.66rem;
+    line-height: 1.2;
+    color: var(--c-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.scroll-sys-stat-value {
+    margin-top: 0.2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--c-text-primary);
+}
+
+.scroll-sys-note {
+    border-radius: 12px;
+    border: 1px solid rgba(139, 92, 246, 0.22);
+    background-color: rgba(139, 92, 246, 0.07);
+    color: var(--c-text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.6;
+}
+
+@keyframes scrollSysOptionIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes scrollSysDotIn {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+@media (max-width: 575.98px) {
+    .scroll-sys-option { padding: 0.7rem 0.8rem; }
+    .scroll-sys-option-icon { width: 32px; height: 32px; }
+    .scroll-sys-stat-value { font-size: 0.75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-sys-option {
+        animation: none;
+        opacity: 1;
+    }
+    .scroll-sys-option.is-active .scroll-sys-radio::after {
+        animation: none;
+    }
+}
+
+
 
 
 

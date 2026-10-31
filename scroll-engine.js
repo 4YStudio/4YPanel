@@ -14,6 +14,22 @@ const AdmZip = require('adm-zip');
 const multer = require('multer');
 const axios = require('axios');
 
+/**
+ * 卷轴系统实例级默认设置
+ * commandFeedback:
+ *   - 'auto'   智能模式：仅当本实例存在已启用的卷轴时才静默指令反馈（默认，兼容插件/模组服）
+ *   - 'silent' 始终静默：无论是否安装卷轴都下发 gamerule sendCommandFeedback false（旧版行为）
+ *   - 'native' 交由服务器管理：面板完全不修改该 gamerule
+ */
+const DEFAULT_SETTINGS = {
+    commandFeedback: 'auto',
+    // 面板是否曾主动下发过 sendCommandFeedback false（用于安全回滚，不影响管理员手动配置）
+    panelSilenced: false,
+    // 是否已完成「旧版本无条件静默」的一次性纠偏
+    legacyHealed: false
+};
+const VALID_FEEDBACK_MODES = ['auto', 'silent', 'native'];
+
 class ScrollEngine {
     constructor(options = {}) {
         this.projectRoot = options.projectRoot || process.cwd();
@@ -69,6 +85,196 @@ class ScrollEngine {
     }
 
     /**
+     * 卷轴系统实例级设置文件: instances/<instanceId>/scrolls/settings.json
+     */
+    getInstanceSettingsFile(instanceId) {
+        return path.join(this.getInstanceScrollsDir(instanceId), 'settings.json');
+    }
+
+    /**
+     * 读取实例的卷轴系统设置（缺省值自动补齐）
+     */
+    getInstanceSettings(instanceId) {
+        const iid = instanceId || this.getActiveInstanceId() || 'default';
+        const file = this.getInstanceSettingsFile(iid);
+        let stored = {};
+        try {
+            if (fs.existsSync(file)) {
+                const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+                if (parsed && typeof parsed === 'object') stored = parsed;
+            }
+        } catch (e) {
+            console.warn(`[ScrollEngine:${iid}] 读取卷轴设置失败，已回退默认值:`, e.message);
+        }
+        const merged = { ...DEFAULT_SETTINGS, ...stored };
+        if (!VALID_FEEDBACK_MODES.includes(merged.commandFeedback)) {
+            merged.commandFeedback = DEFAULT_SETTINGS.commandFeedback;
+        }
+        return merged;
+    }
+
+    /**
+     * 保存实例的卷轴系统设置（仅接受受支持的字段与取值）
+     */
+    saveInstanceSettings(instanceId, patch = {}) {
+        const iid = instanceId || this.getActiveInstanceId() || 'default';
+        const settings = this.getInstanceSettings(iid);
+
+        if (patch && typeof patch === 'object') {
+            if (patch.commandFeedback !== undefined && VALID_FEEDBACK_MODES.includes(patch.commandFeedback)) {
+                settings.commandFeedback = patch.commandFeedback;
+            }
+        }
+
+        const file = this.getInstanceSettingsFile(iid);
+        try {
+            fs.mkdirSync(path.dirname(file), { recursive: true });
+            fs.writeFileSync(file, JSON.stringify(settings, null, 2), 'utf8');
+        } catch (e) {
+            console.error(`[ScrollEngine:${iid}] 保存卷轴设置失败:`, e.message);
+        }
+        return settings;
+    }
+
+    /**
+     * 写入内部状态标记（panelSilenced / legacyHealed），不改变用户可见的策略
+     */
+    setInstanceRuntimeFlags(instanceId, flags = {}) {
+        const iid = instanceId || this.getActiveInstanceId() || 'default';
+        const settings = this.getInstanceSettings(iid);
+        let changed = false;
+        Object.keys(flags).forEach((k) => {
+            if (flags[k] !== undefined && !!settings[k] !== !!flags[k]) {
+                settings[k] = !!flags[k];
+                changed = true;
+            }
+        });
+        if (!changed) return settings;
+
+        const file = this.getInstanceSettingsFile(iid);
+        try {
+            fs.mkdirSync(path.dirname(file), { recursive: true });
+            fs.writeFileSync(file, JSON.stringify(settings, null, 2), 'utf8');
+        } catch (e) {
+            console.error(`[ScrollEngine:${iid}] 写入卷轴运行标记失败:`, e.message);
+        }
+        return settings;
+    }
+
+    /**
+     * 统计实例内已启用的卷轴数量
+     */
+    countEnabledScrolls(instanceId) {
+        try {
+            return this.getAllScrolls(instanceId).filter(s => s.enabled).length;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    /**
+     * 判断当前实例是否应当静默控制台指令反馈
+     * - silent: 始终静默
+     * - auto:   仅当存在已启用卷轴时静默（无卷轴时完全不影响服务器，插件/模组保持原版行为）
+     * - native: 交给服务器自身管理，面板不干预
+     */
+    shouldSilenceCommandFeedback(instanceId) {
+        const settings = this.getInstanceSettings(instanceId);
+        if (settings.commandFeedback === 'native') return false;
+        if (settings.commandFeedback === 'silent') return true;
+        return this.countEnabledScrolls(instanceId) > 0;
+    }
+
+    /**
+     * 按当前策略把 gamerule sendCommandFeedback 应用（或恢复）到实例进程
+     * 返回 { applied, silenced, restored, mode, reason }
+     */
+    applyCommandFeedback(instanceId) {
+        const iid = instanceId || this.getActiveInstanceId() || 'default';
+        const holder = this.getOrCreateHolder(iid);
+        const settings = this.getInstanceSettings(iid);
+        const mode = settings.commandFeedback;
+
+        const state = this.instancesState ? (this.instancesState.get ? this.instancesState.get(iid) : this.instancesState[iid]) : null;
+        const canWrite = !!(state && state.process && !state.process.killed && state.process.stdin);
+
+        const shouldSilence = this.shouldSilenceCommandFeedback(iid);
+
+        if (shouldSilence) {
+            if (!canWrite) {
+                return { applied: false, silenced: false, mode, reason: 'server_not_running' };
+            }
+            this.sendCommand(iid, 'gamerule sendCommandFeedback false');
+            holder.commandFeedbackSilenced = true;
+            this.setInstanceRuntimeFlags(iid, { panelSilenced: true, legacyHealed: true });
+            return { applied: true, silenced: true, mode, reason: 'scrolls_present' };
+        }
+
+        // 无需静默：只要面板此前下发过静默，就安全回滚为 true（不覆盖服务器的原生配置）
+        const wasSilencedByPanel = holder.commandFeedbackSilenced || settings.panelSilenced;
+
+        if (wasSilencedByPanel) {
+            holder.commandFeedbackSilenced = false;
+            if (!canWrite) {
+                // 服务器未运行时不落盘标记，等真正启动后再回滚
+                return { applied: false, silenced: false, restored: false, mode, reason: 'server_not_running' };
+            }
+            this.sendCommand(iid, 'gamerule sendCommandFeedback true');
+            this.setInstanceRuntimeFlags(iid, { panelSilenced: false, legacyHealed: true });
+            return { applied: true, silenced: false, restored: true, mode, reason: 'policy_released' };
+        }
+
+        // native 模式：面板彻底不干预该项 gamerule（仅记录纠偏标记，避免后续再试探）
+        if (mode === 'native') {
+            if (!settings.legacyHealed) this.setInstanceRuntimeFlags(iid, { legacyHealed: true });
+            return { applied: false, silenced: false, mode, reason: 'native_managed' };
+        }
+
+        // 旧版本（<= 2.6.3）曾在每次启动时无条件静默且不会回滚，这里做一次性纠偏
+        if (!settings.legacyHealed) {
+            if (!canWrite) {
+                return { applied: false, silenced: false, restored: false, mode, reason: 'server_not_running', pendingHeal: true };
+            }
+            this.sendCommand(iid, 'gamerule sendCommandFeedback true');
+            this.setInstanceRuntimeFlags(iid, { panelSilenced: false, legacyHealed: true });
+            return { applied: true, silenced: false, restored: true, mode, reason: 'legacy_heal' };
+        }
+
+        return { applied: false, silenced: false, mode, reason: 'no_scrolls' };
+    }
+
+    /**
+     * 卷轴增减后重新评估（仅智能模式需要动态跟随卷轴数量变化）
+     */
+    reevaluateCommandFeedback(instanceId) {
+        const iid = instanceId || this.getActiveInstanceId() || 'default';
+        try {
+            if (this.getInstanceSettings(iid).commandFeedback !== 'auto') return null;
+            return this.applyCommandFeedback(iid);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    /**
+     * 前端展示用的运行时状态快照
+     */
+    getFeedbackRuntime(instanceId) {
+        const iid = instanceId || this.getActiveInstanceId() || 'default';
+        const holder = this.instanceHolders.get(iid);
+        const state = this.instancesState ? (this.instancesState.get ? this.instancesState.get(iid) : this.instancesState[iid]) : null;
+        const settings = this.getInstanceSettings(iid);
+        return {
+            serverRunning: !!(state && state.process && !state.process.killed),
+            serverStatus: (state && state.status) || 'stopped',
+            enabledScrolls: this.countEnabledScrolls(iid),
+            silenced: holder ? !!holder.commandFeedbackSilenced : false,
+            effectiveSilence: this.shouldSilenceCommandFeedback(iid),
+            mode: settings.commandFeedback
+        };
+    }
+
+    /**
      * 获取或初始化指定实例的容器
      */
     getOrCreateHolder(instanceId) {
@@ -85,6 +291,8 @@ class ScrollEngine {
                 scrollsDir,
                 storageDir,
                 scrolls: new Map(),
+                // 是否由面板下发过 gamerule sendCommandFeedback false（用于安全恢复）
+                commandFeedbackSilenced: false,
                 eventListeners: {
                     playerJoin: new Set(),
                     playerQuit: new Set(),
@@ -583,10 +791,17 @@ class ScrollEngine {
         const holder = this.instanceHolders.get(instanceId);
         if (!holder) return;
 
-        // 默认静默后台指令回显，避免卷轴与控制台后台指令向客户端聊天栏广播 [Server: ...]
+        // 按实例的「指令反馈策略」决定是否静默后台指令回显：
+        // 默认智能模式下，只有存在已启用卷轴时才会下发 gamerule sendCommandFeedback false，
+        // 未安装卷轴的插件服/模组服将完全保持服务器原版行为，避免插件或模组功能异常。
         try {
-            this.sendCommand(instanceId, 'gamerule sendCommandFeedback false');
-        } catch (e) {}
+            const result = this.applyCommandFeedback(instanceId);
+            if (result && result.silenced) {
+                console.log(`[ScrollEngine:${instanceId}] 已按「${result.mode}」策略静默控制台指令反馈`);
+            }
+        } catch (e) {
+            console.warn(`[ScrollEngine:${instanceId}] 应用指令反馈策略失败 (已忽略):`, e.message);
+        }
 
         for (const handler of holder.eventListeners.serverStart) {
             try { handler({ instanceId }); } catch (e) {
@@ -684,6 +899,37 @@ class ScrollEngine {
             res.json({ scrolls: this.getAllScrolls(req.instanceId) });
         });
 
+        // 1.1 获取当前实例的卷轴系统设置（含运行时状态）
+        router.get('/settings', requireAuth, withInstance, (req, res) => {
+            res.json({
+                settings: this.getInstanceSettings(req.instanceId),
+                runtime: this.getFeedbackRuntime(req.instanceId)
+            });
+        });
+
+        // 1.2 更新当前实例的卷轴系统设置，并在服务器运行时立即生效
+        router.post('/settings', requireAuth, withInstance, (req, res) => {
+            const body = req.body || {};
+            if (body.commandFeedback !== undefined && !VALID_FEEDBACK_MODES.includes(body.commandFeedback)) {
+                return res.status(400).json({ error: '不支持的指令反馈策略' });
+            }
+
+            const settings = this.saveInstanceSettings(req.instanceId, { commandFeedback: body.commandFeedback });
+            let applied = null;
+            try {
+                applied = this.applyCommandFeedback(req.instanceId);
+            } catch (e) {
+                applied = { applied: false, reason: 'apply_failed' };
+            }
+
+            res.json({
+                success: true,
+                settings,
+                applied,
+                runtime: this.getFeedbackRuntime(req.instanceId)
+            });
+        });
+
         // 2. 切换当前实例指定卷轴的启用状态
         router.post('/:id/toggle', requireAuth, withInstance, async (req, res) => {
             const { id } = req.params;
@@ -699,6 +945,9 @@ class ScrollEngine {
             } else {
                 this.unloadScroll(req.instanceId, id);
             }
+
+            // 智能模式下跟随卷轴增减动态调整指令反馈策略
+            this.reevaluateCommandFeedback(req.instanceId);
 
             res.json({ success: true, enabled });
         });
@@ -773,6 +1022,7 @@ class ScrollEngine {
             if (fs.existsSync(targetDir)) {
                 fs.rmSync(targetDir, { recursive: true, force: true });
             }
+            this.reevaluateCommandFeedback(req.instanceId);
             res.json({ success: true });
         });
 
@@ -885,6 +1135,9 @@ class ScrollEngine {
                 // 清理临时目录
                 try { fs.rmSync(resolvedTempDir, { recursive: true, force: true }); } catch (e) {}
 
+                // 新增卷轴后按智能模式重新评估指令反馈策略
+                this.reevaluateCommandFeedback(req.instanceId);
+
                 res.json({
                     success: true,
                     id: scrollId,
@@ -934,6 +1187,7 @@ class ScrollEngine {
                 zip.extractAllTo(targetDir, true);
 
                 await this.loadScroll(req.instanceId, id);
+                this.reevaluateCommandFeedback(req.instanceId);
                 res.json({ success: true, id });
             } catch (e) {
                 res.status(500).json({ error: '安装卷轴失败: ' + e.message });
